@@ -4,6 +4,7 @@ import (
 	"image"
 	_ "image/png"
 	"log"
+	"math"
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten"
@@ -31,17 +32,51 @@ func (g *Game) Update(_ *ebiten.Image) error {
 		g.world.selectNextShip()
 	}
 
-	if ebiten.IsKeyPressed(ebiten.KeyUp) {
-		g.world.getSelectedShip().Position.Y--
+	var (
+		up    = ebiten.IsKeyPressed(ebiten.KeyUp)
+		down  = ebiten.IsKeyPressed(ebiten.KeyDown)
+		left  = ebiten.IsKeyPressed(ebiten.KeyLeft)
+		right = ebiten.IsKeyPressed(ebiten.KeyRight)
+	)
+
+	var (
+		goesSouth = down && !up
+		goesNorth = up && !down
+		goesWest  = left && !right
+		goesEast  = right && !left
+	)
+
+	selectedShip := g.world.getSelectedShip()
+	if goesNorth {
+		selectedShip.Position.Y--
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyDown) {
-		g.world.getSelectedShip().Position.Y++
+	if goesSouth {
+		selectedShip.Position.Y++
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		g.world.getSelectedShip().Position.X--
+	if goesWest {
+		selectedShip.Position.X--
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyRight) {
-		g.world.getSelectedShip().Position.X++
+	if goesEast {
+		selectedShip.Position.X++
+	}
+
+	switch {
+	case goesNorth && goesWest:
+		selectedShip.Direction = Northwest
+	case goesWest && goesSouth:
+		selectedShip.Direction = Southwest
+	case goesSouth && goesEast:
+		selectedShip.Direction = Southeast
+	case goesEast && goesNorth:
+		selectedShip.Direction = Northeast
+	case goesNorth:
+		selectedShip.Direction = North
+	case goesWest:
+		selectedShip.Direction = West
+	case goesSouth:
+		selectedShip.Direction = South
+	case goesEast:
+		selectedShip.Direction = East
 	}
 
 	for _, ship := range g.world.Ships {
@@ -86,11 +121,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		dio := &ebiten.DrawImageOptions{}
 		scale := 1.0
 		dio.GeoM.Scale(scale, scale)
+		imageWidth, imageHeight := g.images["ship"].Size()
+		dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
+		dio.GeoM.Rotate(-2.0 * math.Pi / 8.0 * float64(ship.Direction))
 		dio.GeoM.Translate(-viewPortCenter.X, -viewPortCenter.Y)
 		dio.GeoM.Translate(screenWidth/2, screenHeight/2)
 		dio.GeoM.Translate(ship.Position.X, ship.Position.Y)
-		imageWidth, imageHeight := g.images["ship"].Size()
-		dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
 		screen.DrawImage(g.images["ship"], dio)
 	}
 
