@@ -112,6 +112,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		dio.GeoM.Translate(planet.Position.X, planet.Position.Y)
 		imageWidth, imageHeight := g.images["planet"].Size()
 		dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
+		dio.ColorM.ChangeHSV(planet.Hue, 1, 1)
 		if planet.Looted {
 			dio.ColorM.ChangeHSV(0, 0, 1)
 		}
@@ -130,7 +131,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		screen.DrawImage(g.images["ship"], dio)
 	}
 
-	ebitenutil.DebugPrint(screen, strconv.Itoa(g.score))
+	ebitenutil.DebugPrint(screen, strconv.Itoa(g.score)+"/"+strconv.Itoa(len(g.world.Planets)))
+	ebitenutil.DebugPrintAt(screen, g.world.getSelectedShip().Position.String(), 0, 16)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {

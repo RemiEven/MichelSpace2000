@@ -12,24 +12,15 @@ func NewWorld() *World {
 
 	return &World{
 		Planets: []*Planet{
-			{
-				Position: Position{
-					X: 150,
-					Y: 200,
-				},
-			},
-			{
-				Position: Position{
-					X: 30,
-					Y: 100,
-				},
-			},
-			{
-				Position: Position{
-					X: 40,
-					Y: 180,
-				},
-			},
+			NewGasPlanet(),
+			NewGasPlanet(),
+			NewGasPlanet(),
+			NewGasPlanet(),
+			NewGasPlanet(),
+			NewGasPlanet(),
+			NewGasPlanet(),
+			NewGasPlanet(),
+			NewGasPlanet(),
 		},
 		Ships: []*Ship{ship1, ship2},
 	}
