@@ -47,17 +47,18 @@ func (g *Game) Update(_ *ebiten.Image) error {
 	)
 
 	selectedShip := g.world.getSelectedShip()
+	speed := 6.0
 	if goesNorth {
-		selectedShip.Position.Y--
+		selectedShip.Position.Y -= speed
 	}
 	if goesSouth {
-		selectedShip.Position.Y++
+		selectedShip.Position.Y += speed
 	}
 	if goesWest {
-		selectedShip.Position.X--
+		selectedShip.Position.X -= speed
 	}
 	if goesEast {
-		selectedShip.Position.X++
+		selectedShip.Position.X += speed
 	}
 
 	switch {
@@ -102,6 +103,25 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	viewPortCenter := g.world.getSelectedShip().Position
+
+	scale := 1.0
+	parallaxFactor := 3.0
+	imageWidth, imageHeight := g.images["bg"].Size()
+	topLeftBackgroundTileX := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*viewPortCenter.X - screenWidth/2) / (float64(imageWidth) * scale)))
+	topLeftBackgroundTileY := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*viewPortCenter.Y - screenHeight/2) / (float64(imageHeight) * scale)))
+	bottomRightBackgroundTileX := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*viewPortCenter.X + screenWidth/2) / (float64(imageWidth) * scale)))
+	bottomRightBackgroundTileY := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*viewPortCenter.Y + screenHeight/2) / (float64(imageHeight) * scale)))
+	x := topLeftBackgroundTileX
+	for x <= bottomRightBackgroundTileX {
+		y := topLeftBackgroundTileY
+		for y <= bottomRightBackgroundTileY {
+			dio := &ebiten.DrawImageOptions{}
+			dio.GeoM.Translate(float64(x)*scale*float64(imageWidth)+screenWidth/2.0-(parallaxFactor-1.0)*viewPortCenter.X/parallaxFactor, float64(y)*scale*float64(imageHeight)+screenHeight/2.0-(parallaxFactor-1.0)*viewPortCenter.Y/parallaxFactor)
+			screen.DrawImage(g.images["bg"], dio)
+			y++
+		}
+		x++
+	}
 
 	for _, planet := range g.world.Planets {
 		dio := &ebiten.DrawImageOptions{}
@@ -157,6 +177,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	bgImg, _, err := ebitenutil.NewImageFromFile("./back.png", ebiten.FilterDefault)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	ebiten.SetWindowSize(1280, 800)
 	ebiten.SetWindowTitle("BLBLBLBLBLBLBL")
@@ -164,6 +188,7 @@ func main() {
 		images: map[string]*ebiten.Image{
 			"ship":   shipImg,
 			"planet": planetImg,
+			"bg":     bgImg,
 		},
 		world: NewWorld(),
 	}); err != nil {
