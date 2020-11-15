@@ -1,13 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"image"
 	_ "image/png"
+	"io"
+	"io/ioutil"
 	"log"
 	"math"
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
@@ -15,13 +20,17 @@ import (
 const (
 	screenWidth  = 640
 	screenHeight = 400
+
+	sampleRate = 44100
 )
 
 type Game struct {
-	images map[string]*ebiten.Image
-	world  *World
-	score  int
-	won    bool
+	images      map[string]*ebiten.Image
+	musicPlayer *Player
+
+	world *World
+	score int
+	won   bool
 }
 
 func (g *Game) Update() error {
@@ -188,6 +197,30 @@ func main() {
 
 	ebiten.SetWindowSize(1280, 800)
 	ebiten.SetWindowTitle("BLBLBLBLBLBLBL")
+
+	audioContext := audio.NewContext(sampleRate)
+
+	type audioStream interface {
+		io.ReadSeeker
+		Length() int64
+	}
+
+	var s audioStream
+
+	music, err := ioutil.ReadFile("./Hardmoon_-_Deep_space.mp3")
+	s, err = mp3.Decode(audioContext, bytes.NewReader(music))
+	// s, err = mp3.Decode(audioContext, bytes.NewReader(raudio.Classic_mp3))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	p, err := audio.NewPlayer(audioContext, s)
+	player := &Player{
+		audioContext: audioContext,
+		audioPlayer:  p,
+	}
+	player.audioPlayer.Play()
+
 	if err = ebiten.RunGame(&Game{
 		images: map[string]*ebiten.Image{
 			"ship":   shipImg,
