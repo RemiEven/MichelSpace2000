@@ -5,8 +5,6 @@ import (
 	"math/rand"
 )
 
-const worldSize = 1000
-
 type Planet struct {
 	Position Position
 	Looted   bool
@@ -15,10 +13,10 @@ type Planet struct {
 
 func NewGasPlanet() *Planet {
 	return &Planet{
-		Position: Position{
-			X: rand.Float64()*worldSize - worldSize/2,
-			Y: rand.Float64()*worldSize - worldSize/2,
-		},
+		// Position: Position{
+		// 	X: rand.Float64()*worldSize - worldSize/2,
+		// 	Y: rand.Float64()*worldSize - worldSize/2,
+		// },
 		Hue: rand.Float64() * 2 * math.Pi,
 	}
 }

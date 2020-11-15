@@ -7,9 +7,9 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
-	"github.com/hajimehoshi/ebiten/inpututil"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 const (
@@ -24,7 +24,7 @@ type Game struct {
 	won    bool
 }
 
-func (g *Game) Update(_ *ebiten.Image) error {
+func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyQ) {
 		g.world.selectPreviousShip()
 	}
@@ -96,6 +96,10 @@ func (g *Game) Update(_ *ebiten.Image) error {
 	return nil
 }
 
+func getChunkContaining(p Position) (int, int) {
+	return int(math.Floor(p.X / 50.0 * 32)), int(math.Floor(p.Y / 50.0 * 32))
+}
+
 func (g *Game) Draw(screen *ebiten.Image) {
 	if g.won {
 		ebitenutil.DebugPrint(screen, "victory")
@@ -123,7 +127,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		x++
 	}
 
-	for _, planet := range g.world.Planets {
+	for _, planet := range g.world.Planets { // TODO: only do that for displayed chunks
 		dio := &ebiten.DrawImageOptions{}
 		scale := 0.25
 		dio.GeoM.Scale(scale, scale)
@@ -138,7 +142,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 		screen.DrawImage(g.images["planet"], dio)
 	}
-	for _, ship := range g.world.Ships {
+	for _, ship := range g.world.Ships { // TODO: only do that for displayed chunks
 		dio := &ebiten.DrawImageOptions{}
 		scale := 1.0
 		dio.GeoM.Scale(scale, scale)
@@ -160,7 +164,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func main() {
-	shipsImg, _, err := ebitenutil.NewImageFromFile("./modular_ships.png", ebiten.FilterDefault)
+	shipsImg, _, err := ebitenutil.NewImageFromFile("./modular_ships.png")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -173,11 +177,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	planetImg, _, err := ebitenutil.NewImageFromFile("./Green Gas Planet.png", ebiten.FilterDefault)
+	planetImg, _, err := ebitenutil.NewImageFromFile("./Green Gas Planet.png")
 	if err != nil {
 		log.Fatal(err)
 	}
-	bgImg, _, err := ebitenutil.NewImageFromFile("./back.png", ebiten.FilterDefault)
+	bgImg, _, err := ebitenutil.NewImageFromFile("./back.png")
 	if err != nil {
 		log.Fatal(err)
 	}
