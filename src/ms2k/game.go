@@ -1,6 +1,7 @@
 package ms2k
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 
@@ -16,11 +17,30 @@ const (
 
 // Game contains all loaded game assets with current game data
 type Game struct {
-	Images map[string]*ebiten.Image
+	assetLibrary *AssetLibrary
 
 	World *World
 	score int
 	won   bool
+}
+
+// Init initializes a game
+func (g *Game) Init() error {
+	// TODO: create first few chunks of world
+
+	assetLibrary, err := NewAssetLibrary()
+	if err != nil {
+		return fmt.Errorf("failed to load asset library: %w", err)
+	}
+	g.assetLibrary = assetLibrary
+
+	audioContext := NewAudioContext()
+
+	if _, err := NewPlayer(audioContext, g.assetLibrary.sounds["music"]); err != nil {
+		return fmt.Errorf("failed to play music: %w", err)
+	}
+
+	return nil
 }
 
 // Update is used to implement the ebiten.Game interface
@@ -111,7 +131,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	scale := 1.0
 	parallaxFactor := 3.0
-	imageWidth, imageHeight := g.Images["bg"].Size()
+	imageWidth, imageHeight := g.assetLibrary.images["bg"].Size()
 	topLeftBackgroundTileX := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*viewPortCenter.X - screenWidth/2) / (float64(imageWidth) * scale)))
 	topLeftBackgroundTileY := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*viewPortCenter.Y - screenHeight/2) / (float64(imageHeight) * scale)))
 	bottomRightBackgroundTileX := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*viewPortCenter.X + screenWidth/2) / (float64(imageWidth) * scale)))
@@ -122,7 +142,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		for y <= bottomRightBackgroundTileY {
 			dio := &ebiten.DrawImageOptions{}
 			dio.GeoM.Translate(float64(x)*scale*float64(imageWidth)+screenWidth/2.0-(parallaxFactor-1.0)*viewPortCenter.X/parallaxFactor, float64(y)*scale*float64(imageHeight)+screenHeight/2.0-(parallaxFactor-1.0)*viewPortCenter.Y/parallaxFactor)
-			screen.DrawImage(g.Images["bg"], dio)
+			screen.DrawImage(g.assetLibrary.images["bg"], dio)
 			y++
 		}
 		x++
@@ -135,25 +155,25 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		dio.GeoM.Translate(-viewPortCenter.X, -viewPortCenter.Y)
 		dio.GeoM.Translate(screenWidth/2, screenHeight/2)
 		dio.GeoM.Translate(planet.Position.X, planet.Position.Y)
-		imageWidth, imageHeight := g.Images["planet"].Size()
+		imageWidth, imageHeight := g.assetLibrary.images["planet"].Size()
 		dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
 		dio.ColorM.ChangeHSV(planet.Hue, 1, 1)
 		if planet.Looted {
 			dio.ColorM.ChangeHSV(0, 0, 1)
 		}
-		screen.DrawImage(g.Images["planet"], dio)
+		screen.DrawImage(g.assetLibrary.images["planet"], dio)
 	}
 	for _, ship := range g.World.Ships { // TODO: only do that for displayed chunks
 		dio := &ebiten.DrawImageOptions{}
 		scale := 1.0
 		dio.GeoM.Scale(scale, scale)
-		imageWidth, imageHeight := g.Images["ship"].Size()
+		imageWidth, imageHeight := g.assetLibrary.images["ship"].Size()
 		dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
 		dio.GeoM.Rotate(-2.0 * math.Pi / 8.0 * float64(ship.Direction))
 		dio.GeoM.Translate(-viewPortCenter.X, -viewPortCenter.Y)
 		dio.GeoM.Translate(screenWidth/2, screenHeight/2)
 		dio.GeoM.Translate(ship.Position.X, ship.Position.Y)
-		screen.DrawImage(g.Images["ship"], dio)
+		screen.DrawImage(g.assetLibrary.images["ship"], dio)
 	}
 
 	ebitenutil.DebugPrint(screen, strconv.Itoa(g.score)+"/"+strconv.Itoa(len(g.World.Planets)))
