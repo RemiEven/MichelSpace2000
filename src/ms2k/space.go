@@ -1,4 +1,4 @@
-package main
+package ms2k
 
 import (
 	"math/rand"
