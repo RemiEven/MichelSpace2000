@@ -177,7 +177,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func main() {
-	shipsImg, _, err := ebitenutil.NewImageFromFile("./modular_ships.png")
+	shipsImg, _, err := ebitenutil.NewImageFromFile("./assets/img/modular_ships.png")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -190,11 +190,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	planetImg, _, err := ebitenutil.NewImageFromFile("./Green Gas Planet.png")
+	planetImg, _, err := ebitenutil.NewImageFromFile("./assets/img/Green Gas Planet.png")
 	if err != nil {
 		log.Fatal(err)
 	}
-	bgImg, _, err := ebitenutil.NewImageFromFile("./back.png")
+	bgImg, _, err := ebitenutil.NewImageFromFile("./assets/img/back.png")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -211,7 +211,7 @@ func main() {
 
 	var s audioStream
 
-	music, err := ioutil.ReadFile("./Hardmoon_-_Deep_space.mp3")
+	music, err := ioutil.ReadFile("./assets/audio/Hardmoon_-_Deep_space.mp3")
 	s, err = mp3.Decode(audioContext, bytes.NewReader(music))
 	// s, err = mp3.Decode(audioContext, bytes.NewReader(raudio.Classic_mp3))
 	if err != nil {
