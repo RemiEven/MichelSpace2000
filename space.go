@@ -6,6 +6,7 @@ import (
 	opensimplex "github.com/ojrac/opensimplex-go"
 )
 
+// World contains data such as all the Planets & Ships of the game
 type World struct {
 	Planets           []*Planet
 	Ships             []*Ship
@@ -14,6 +15,7 @@ type World struct {
 	noise opensimplex.Noise32
 }
 
+// NewWorld creates a new world
 func NewWorld() *World {
 	ship1 := &Ship{}
 	ship2 := &Ship{}
@@ -24,11 +26,10 @@ func NewWorld() *World {
 	for i := -10; i <= 10; i++ {
 		for j := -10; j <= 10; j++ {
 			if noise.Eval2(float32(i), float32(j)) > 0.8 {
-				planet := NewGasPlanet()
-				planet.Position = Position{
+				planet := NewGasPlanet(Position{
 					X: 50.0 * float64(i),
 					Y: 50.0 * float64(j),
-				}
+				})
 				planets = append(planets, planet)
 			}
 		}

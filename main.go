@@ -24,6 +24,7 @@ const (
 	sampleRate = 44100
 )
 
+// Game contains all loaded game assets with current game data
 type Game struct {
 	images      map[string]*ebiten.Image
 	musicPlayer *Player
@@ -33,6 +34,7 @@ type Game struct {
 	won   bool
 }
 
+// Update is used to implement the ebiten.Game interface
 func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyQ) {
 		g.world.selectPreviousShip()
@@ -109,6 +111,7 @@ func getChunkContaining(p Position) (int, int) {
 	return int(math.Floor(p.X / 50.0 * 32)), int(math.Floor(p.Y / 50.0 * 32))
 }
 
+// Draw is used to implement the ebiten.Game interface
 func (g *Game) Draw(screen *ebiten.Image) {
 	if g.won {
 		ebitenutil.DebugPrint(screen, "victory")
@@ -168,6 +171,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrintAt(screen, g.world.getSelectedShip().Position.String(), 0, 16)
 }
 
+// Layout is used to implement the ebiten.Game interface
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
 }
