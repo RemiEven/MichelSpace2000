@@ -13,6 +13,9 @@ import (
 const (
 	screenWidth  = 640
 	screenHeight = 400
+
+	viewportBorderMargin = 20 // should be equal or bigger than half the side length of the biggest sprite to avoid clipping
+
 )
 
 // Game contains all loaded game assets with current game data
@@ -100,6 +103,8 @@ func (g *Game) Update() error {
 		selectedShip.Direction = East
 	}
 
+	g.World.ensureChunksAroundAreGenerated(selectedShip.Position)
+
 	for _, ship := range g.World.Ships {
 		for _, planet := range g.World.Planets {
 			if !planet.Looted && ship.Position.DistanceTo(&planet.Position) < 50 {
@@ -109,15 +114,11 @@ func (g *Game) Update() error {
 		}
 	}
 
-	if g.score == len(g.World.Planets) {
+	if g.score == 50 {
 		g.won = true
 	}
 
 	return nil
-}
-
-func getChunkContaining(p Position) (int, int) {
-	return int(math.Floor(p.X / 50.0 * 32)), int(math.Floor(p.Y / 50.0 * 32))
 }
 
 // Draw is used to implement the ebiten.Game interface
@@ -148,32 +149,46 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		x++
 	}
 
-	for _, planet := range g.World.Planets { // TODO: only do that for displayed chunks
-		dio := &ebiten.DrawImageOptions{}
-		scale := 0.25
-		dio.GeoM.Scale(scale, scale)
-		dio.GeoM.Translate(-viewPortCenter.X, -viewPortCenter.Y)
-		dio.GeoM.Translate(screenWidth/2, screenHeight/2)
-		dio.GeoM.Translate(planet.Position.X, planet.Position.Y)
+	minXToDisplay := viewPortCenter.X - screenWidth/2 - viewportBorderMargin*scale
+	maxXToDisplay := viewPortCenter.X + screenWidth/2 + viewportBorderMargin*scale
+	minYToDisplay := viewPortCenter.Y - screenHeight/2 - viewportBorderMargin*scale
+	maxYToDisplay := viewPortCenter.Y + screenHeight/2 + viewportBorderMargin*scale
+
+	{
 		imageWidth, imageHeight := g.assetLibrary.images["planet"].Size()
-		dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
-		dio.ColorM.ChangeHSV(planet.Hue, 1, 1)
-		if planet.Looted {
-			dio.ColorM.ChangeHSV(0, 0, 1)
+		for _, planet := range g.World.Planets {
+			if isInBox(planet.Position.X, planet.Position.Y, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {
+				dio := &ebiten.DrawImageOptions{}
+				scale := 0.25
+				dio.GeoM.Scale(scale, scale)
+				dio.GeoM.Translate(-viewPortCenter.X, -viewPortCenter.Y)
+				dio.GeoM.Translate(screenWidth/2, screenHeight/2)
+				dio.GeoM.Translate(planet.Position.X, planet.Position.Y)
+				dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
+				dio.ColorM.ChangeHSV(planet.Hue, 1, 1)
+				if planet.Looted {
+					dio.ColorM.ChangeHSV(0, 0, 1)
+				}
+				screen.DrawImage(g.assetLibrary.images["planet"], dio)
+			}
 		}
-		screen.DrawImage(g.assetLibrary.images["planet"], dio)
 	}
-	for _, ship := range g.World.Ships { // TODO: only do that for displayed chunks
-		dio := &ebiten.DrawImageOptions{}
-		scale := 1.0
-		dio.GeoM.Scale(scale, scale)
+
+	{
 		imageWidth, imageHeight := g.assetLibrary.images["ship"].Size()
-		dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
-		dio.GeoM.Rotate(-2.0 * math.Pi / 8.0 * float64(ship.Direction))
-		dio.GeoM.Translate(-viewPortCenter.X, -viewPortCenter.Y)
-		dio.GeoM.Translate(screenWidth/2, screenHeight/2)
-		dio.GeoM.Translate(ship.Position.X, ship.Position.Y)
-		screen.DrawImage(g.assetLibrary.images["ship"], dio)
+		for _, ship := range g.World.Ships {
+			if isInBox(ship.Position.X, ship.Position.Y, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {
+				dio := &ebiten.DrawImageOptions{}
+				scale := 1.0
+				dio.GeoM.Scale(scale, scale)
+				dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
+				dio.GeoM.Rotate(-2.0 * math.Pi / 8.0 * float64(ship.Direction))
+				dio.GeoM.Translate(-viewPortCenter.X, -viewPortCenter.Y)
+				dio.GeoM.Translate(screenWidth/2, screenHeight/2)
+				dio.GeoM.Translate(ship.Position.X, ship.Position.Y)
+				screen.DrawImage(g.assetLibrary.images["ship"], dio)
+			}
+		}
 	}
 
 	ebitenutil.DebugPrint(screen, strconv.Itoa(g.score)+"/"+strconv.Itoa(len(g.World.Planets)))
@@ -183,4 +198,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 // Layout is used to implement the ebiten.Game interface
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
+}
+
+func isInBox(x, y, minX, maxX, minY, maxY float64) bool {
+	return minX <= x && x <= maxX && minY <= y && y <= maxY
 }
