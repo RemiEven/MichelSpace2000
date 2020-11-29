@@ -1,11 +1,9 @@
 package ms2k
 
 import (
-	"fmt"
 	"math"
-	"math/rand"
 
-	opensimplex "github.com/ojrac/opensimplex-go"
+	"github.com/RemiEven/michelSpace2000/src/ms2k/rng"
 )
 
 const (
@@ -20,28 +18,22 @@ type World struct {
 	Ships             []*Ship
 	selectedShipIndex int
 
-	noise  opensimplex.Noise32
-	noise2 opensimplex.Noise32
+	rng *rng.RNG
 }
 
 // NewWorld creates a new world
-func NewWorld() *World {
+func NewWorld(rng *rng.RNG) *World {
 	ship1 := &Ship{}
 	ship2 := &Ship{}
-
-	seed := rand.Int63()
-	noise := opensimplex.NewNormalized32(seed)
-	fmt.Printf("%16x\n", seed)
-	noise2 := opensimplex.NewNormalized32(seed * seed)
 
 	planets := make([]*Planet, 0)
 
 	return &World{
 		Planets:         planets,
 		Ships:           []*Ship{ship1, ship2},
-		noise:           noise,
-		noise2:          noise2,
 		GeneratedChunks: map[int]map[int]struct{}{},
+
+		rng: rng,
 	}
 }
 
@@ -75,13 +67,13 @@ func (w *World) ensureChunksAroundAreGenerated(p Position) {
 func (w *World) generateChunk(x, y int) {
 	for i := 0; i < chunkSize; i++ {
 		for j := 0; j < chunkSize; j++ {
-			if w.noise.Eval2(float32(i+x*chunkSize), float32(j+y*chunkSize)) >= 0.9 {
+			if w.rng.GetValueAtPosition(float32(i+x*chunkSize), float32(j+y*chunkSize)) >= 0.9 {
 				planet := &Planet{
 					Position: Position{
 						X: cellSize*float64(i) + float64(x*cellSize*chunkSize),
 						Y: cellSize*float64(j) + float64(y*cellSize*chunkSize),
 					},
-					Hue: float64(w.noise2.Eval2(float32(i+x*chunkSize)/20, float32(j+y*chunkSize)/20) * 2 * math.Pi),
+					Hue: float64(w.rng.GetValueAtPosition(-float32(i+x*chunkSize)/20, -float32(j+y*chunkSize)/20) * 2 * math.Pi),
 				}
 				w.Planets = append(w.Planets, planet)
 			}

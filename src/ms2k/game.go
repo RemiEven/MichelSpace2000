@@ -179,7 +179,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 					dio.ColorM.ChangeHSV(0, 0, 1)
 				}
 				screen.DrawImage(g.assetLibrary.images["planet"], dio)
-				// screen.DrawImage(rrr, dio)
 			}
 		}
 	}
