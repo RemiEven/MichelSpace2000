@@ -5,7 +5,7 @@ import (
 	"image"
 	"io/ioutil"
 
-	_ "image/png"
+	_ "image/png" // needed to correctly load PNG files
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"

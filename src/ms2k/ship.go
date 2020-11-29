@@ -12,7 +12,7 @@ type Position struct {
 
 // DistanceTo measures the distance between the position and another
 func (p *Position) DistanceTo(other *Position) float64 {
-	return math.Sqrt(math.Pow(p.X-other.X, 2) + math.Pow(p.Y-other.Y, 2))
+	return math.Hypot(p.X-other.X, p.Y-other.Y)
 }
 
 // String returns a text representation of the position
