@@ -2,12 +2,14 @@ package ms2k
 
 import (
 	"fmt"
+	"image/color"
 	"math"
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text"
 )
 
 const (
@@ -200,9 +202,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 	}
 
-	ebitenutil.DebugPrint(screen, strconv.Itoa(g.score)+"/"+strconv.Itoa(len(g.World.Planets)))
-	ebitenutil.DebugPrintAt(screen, g.World.getSelectedShip().Position.String(), 0, 16)
-	ebitenutil.DebugPrintAt(screen, strconv.Itoa(int(minXToDisplay)), 0, 48)
+	fontFace := g.assetLibrary.fontFaces["oxanium"]
+	textColor := color.White
+	text.Draw(screen, strconv.Itoa(g.score)+"/"+strconv.Itoa(len(g.World.Planets)), fontFace, 0, 26, textColor)
+	text.Draw(screen, g.World.getSelectedShip().Position.String(), fontFace, 0, 54, textColor)
+	text.Draw(screen, strconv.Itoa(int(minXToDisplay)), fontFace, 0, 110, textColor)
 }
 
 func translateToDrawPosition(gamePosition, viewPortCenter Position, geoM *ebiten.GeoM, zoomFactor float64) {
