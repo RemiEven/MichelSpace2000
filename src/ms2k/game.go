@@ -202,6 +202,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 	}
 
+	textBgColor := color.Black
+	ebitenutil.DrawRect(screen, 0, 0, 250, 120, textBgColor)
+
 	fontFace := g.assetLibrary.fontFaces["oxanium"]
 	textColor := color.White
 	text.Draw(screen, strconv.Itoa(g.score)+"/"+strconv.Itoa(len(g.World.Planets)), fontFace, 0, 26, textColor)
