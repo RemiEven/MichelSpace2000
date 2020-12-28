@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"math"
 	"strconv"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -17,7 +18,6 @@ const (
 	screenHeight = 400 * 2
 
 	viewportBorderMargin = 32 // should be equal or bigger than half the side length of the biggest sprite to avoid clipping
-
 )
 
 var (
@@ -31,6 +31,9 @@ type Game struct {
 	World *World
 	score int
 	won   bool
+	lost  bool
+
+	lose *Operation
 }
 
 // Init initializes a game
@@ -45,6 +48,11 @@ func (g *Game) Init() error {
 
 	if _, err := NewPlayer(audioContext, g.assetLibrary.sounds["music"]); err != nil {
 		return fmt.Errorf("failed to play music: %w", err)
+	}
+
+	g.lose = &Operation{
+		lastUpdate: time.Now(),
+		speed:      5,
 	}
 
 	return nil
@@ -125,8 +133,12 @@ func (g *Game) Update() error {
 		}
 	}
 
-	if g.score == 200 {
+	if g.score >= 10 && !g.lost {
 		g.won = true
+	}
+	g.lose.Update(time.Now())
+	if g.lose.IsCompleted() && !g.won {
+		g.lost = true
 	}
 
 	return nil
@@ -136,6 +148,10 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	if g.won {
 		ebitenutil.DebugPrint(screen, "victory")
+		return
+	}
+	if g.lost {
+		ebitenutil.DebugPrint(screen, "game over")
 		return
 	}
 
@@ -207,7 +223,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	fontFace := g.assetLibrary.fontFaces["oxanium"]
 	textColor := color.White
-	text.Draw(screen, strconv.Itoa(g.score)+"/"+strconv.Itoa(len(g.World.Planets)), fontFace, 0, 26, textColor)
+	text.Draw(screen, strconv.Itoa(g.score)+"/"+strconv.Itoa(10), fontFace, 0, 26, textColor)
 	text.Draw(screen, g.World.getSelectedShip().Position.String(), fontFace, 0, 54, textColor)
 	text.Draw(screen, strconv.Itoa(int(minXToDisplay)), fontFace, 0, 110, textColor)
 }
