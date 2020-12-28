@@ -23,8 +23,12 @@ type World struct {
 
 // NewWorld creates a new world
 func NewWorld(rng *rng.RNG) *World {
-	ship1 := &Ship{}
-	ship2 := &Ship{}
+	ship1 := &Ship{
+		PlanetScans: map[*Planet]*Operation{},
+	}
+	ship2 := &Ship{
+		PlanetScans: map[*Planet]*Operation{},
+	}
 
 	planets := make([]*Planet, 0)
 

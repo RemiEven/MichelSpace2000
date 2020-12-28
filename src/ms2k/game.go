@@ -52,7 +52,7 @@ func (g *Game) Init() error {
 
 	g.lose = &Operation{
 		lastUpdate: time.Now(),
-		speed:      5,
+		speed:      1,
 	}
 
 	return nil
@@ -60,6 +60,7 @@ func (g *Game) Init() error {
 
 // Update is used to implement the ebiten.Game interface
 func (g *Game) Update() error {
+	timeNow := time.Now()
 	if inpututil.IsKeyJustPressed(ebiten.KeyQ) {
 		g.World.selectPreviousShip()
 	}
@@ -127,8 +128,24 @@ func (g *Game) Update() error {
 	for _, ship := range g.World.Ships {
 		for _, planet := range g.World.Planets {
 			if !planet.Looted && ship.Position.DistanceTo(&planet.Position) < 50 {
-				planet.Looted = true
-				g.score++
+				if _, ok := ship.PlanetScans[planet]; !ok {
+					ship.PlanetScans[planet] = &Operation{
+						lastUpdate: timeNow,
+						speed:      50,
+					}
+				}
+			}
+		}
+		for planet, scan := range ship.PlanetScans {
+			if !planet.Looted && ship.Position.DistanceTo(&planet.Position) < 50 {
+				scan.Update(timeNow)
+				if scan.IsCompleted() {
+					delete(ship.PlanetScans, planet)
+					g.score++
+					planet.Looted = true
+				}
+			} else {
+				delete(ship.PlanetScans, planet)
 			}
 		}
 	}
@@ -136,7 +153,7 @@ func (g *Game) Update() error {
 	if g.score >= 10 && !g.lost {
 		g.won = true
 	}
-	g.lose.Update(time.Now())
+	g.lose.Update(timeNow)
 	if g.lose.IsCompleted() && !g.won {
 		g.lost = true
 	}

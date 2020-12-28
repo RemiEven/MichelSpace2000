@@ -39,4 +39,6 @@ const (
 type Ship struct {
 	Position  Position
 	Direction Direction
+
+	PlanetScans map[*Planet]*Operation
 }
