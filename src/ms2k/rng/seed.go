@@ -18,6 +18,11 @@ func toRadix36(r rune) (int64, error) {
 	return 0, errors.New("only number and lowercase characters are supported")
 }
 
+func isValidSeed(seed string) bool {
+	_, err := seedToInt64(seed)
+	return err == nil
+}
+
 func seedToInt64(seed string) (int64, error) {
 	result := int64(0)
 	for i, r := range []rune(seed) {
