@@ -1,18 +1,21 @@
 package ms2k
 
 import (
+	"bytes"
+	"embed"
 	"fmt"
 	"image"
-	"io/ioutil"
 
 	_ "image/png" // needed to correctly load PNG files
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
 )
+
+//go:embed assets
+var assetFS embed.FS
 
 // AssetLibrary loads and holds all assets of the game
 type AssetLibrary struct {
@@ -53,16 +56,21 @@ func NewAssetLibrary() (*AssetLibrary, error) {
 }
 
 func (al *AssetLibrary) loadImage(path, name string) error {
-	img, _, err := ebitenutil.NewImageFromFile("./assets/img/" + path)
+	content, err := assetFS.ReadFile("assets/img/" + path)
 	if err != nil {
 		return fmt.Errorf("failed to load image [%q]: %w", name, err)
 	}
-	al.images[name] = img
+
+	img, _, err := image.Decode(bytes.NewReader(content))
+	if err != nil {
+		return fmt.Errorf("failed to decode image [%q]: %w", name, err)
+	}
+	al.images[name] = ebiten.NewImageFromImage(img)
 	return nil
 }
 
 func (al *AssetLibrary) loadSound(path, name string) error {
-	sound, err := ioutil.ReadFile("./assets/audio/" + path)
+	sound, err := assetFS.ReadFile("assets/audio/" + path)
 	if err != nil {
 		return fmt.Errorf("failed to load sound [%q]: %w", name, err)
 	}
@@ -72,7 +80,7 @@ func (al *AssetLibrary) loadSound(path, name string) error {
 }
 
 func (al *AssetLibrary) loadFontFace(path, name string) error {
-	fontFileData, err := ioutil.ReadFile("./assets/font/" + path)
+	fontFileData, err := assetFS.ReadFile("assets/font/" + path)
 	if err != nil {
 		return fmt.Errorf("failed to read font [%q]: %w", name, err)
 	}
