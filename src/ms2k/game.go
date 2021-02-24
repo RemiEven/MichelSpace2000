@@ -306,11 +306,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 
 		textBgColor := color.Black
-		ebitenutil.DrawRect(screen, 0, 0, 250, 120, textBgColor)
+		ebitenutil.DrawRect(screen, 0, 0, 250, 90, textBgColor)
 
 		text.Draw(screen, strconv.Itoa(g.score)+"/"+strconv.Itoa(10), fontFace, 0, 26, textColor)
 		text.Draw(screen, g.World.getSelectedShip().Position.String(), fontFace, 0, 54, textColor)
-		text.Draw(screen, strconv.Itoa(int(minXToDisplay)), fontFace, 0, 110, textColor)
 	case stateLost:
 		text.Draw(screen, "Game over", fontFace, 0, 26, textColor)
 	case stateWon:
