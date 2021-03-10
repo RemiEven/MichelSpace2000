@@ -1,0 +1,20 @@
+name: on-push
+on: [push]
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
+      - name: Build linux executable
+        run: go build .
+      - name: Build windows executable
+        env:
+          GOOS: windows
+          GOARCH: amd64
+        run: go build .
