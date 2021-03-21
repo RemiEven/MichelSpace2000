@@ -1,57 +1,6 @@
 package ms2k
 
-import (
-	"math"
-
-	"github.com/RemiEven/michelSpace2000/src/ms2k/rng"
-)
-
-const (
-	cellSize  = 50
-	chunkSize = 32
-)
-
-// World contains data such as all the Planets & Ships of the game
-type World struct {
-	Planets           []*Planet
-	GeneratedChunks   map[int]map[int]struct{}
-	Ships             []*Ship
-	selectedShipIndex int
-
-	rng *rng.RNG
-}
-
-// NewWorld creates a new world
-func NewWorld(rng *rng.RNG) *World {
-	ship1 := &Ship{
-		PlanetScans: map[*Planet]*Operation{},
-	}
-	ship2 := &Ship{
-		PlanetScans: map[*Planet]*Operation{},
-	}
-
-	planets := make([]*Planet, 0)
-
-	return &World{
-		Planets:         planets,
-		Ships:           []*Ship{ship1, ship2},
-		GeneratedChunks: map[int]map[int]struct{}{},
-
-		rng: rng,
-	}
-}
-
-func (w *World) getSelectedShip() *Ship {
-	return w.Ships[w.selectedShipIndex]
-}
-
-func (w *World) selectNextShip() {
-	w.selectedShipIndex = (w.selectedShipIndex + 1) % len(w.Ships)
-}
-
-func (w *World) selectPreviousShip() {
-	w.selectedShipIndex = (w.selectedShipIndex + len(w.Ships) - 1) % len(w.Ships)
-}
+import "math"
 
 func (w *World) ensureChunksAroundAreGenerated(p Position) {
 	x0, y0 := getChunkContaining(p)

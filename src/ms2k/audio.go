@@ -29,6 +29,6 @@ func NewPlayer(audioContext *audio.Context, sound []byte) (*audio.Player, error)
 	if err != nil {
 		return nil, err
 	}
-	// player.Play()
+	player.Play()
 	return player, nil
 }
