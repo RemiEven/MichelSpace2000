@@ -15,6 +15,7 @@ import (
 
 const (
 	stateInMenu = iota
+	stateCreatingGame
 	stateInGame
 	stateInSettings
 	stateWon
@@ -38,7 +39,8 @@ type Game struct {
 
 	state int8
 
-	menu *MainMenu
+	menu             *MainMenu
+	gameCreationMenu *GameCreationMenu
 
 	settings *Settings
 
@@ -61,6 +63,7 @@ func (g *Game) Init() error {
 
 	g.state = stateInMenu
 	g.menu = &MainMenu{}
+	g.gameCreationMenu = &GameCreationMenu{}
 	g.settings = &Settings{
 		keyboardLayout: keyboardLayoutQwerty,
 	}
@@ -76,15 +79,15 @@ func (g *Game) Update() error {
 	switch g.state {
 	case stateInMenu:
 		nextState = g.menu.Update()
+	case stateCreatingGame:
+		nextState = g.gameCreationMenu.Update()
 		switch nextState {
 		case stateInGame:
-			rng, err := rng.NewRNG("") // TODO: show a text input to have a seed
+			rng, err := rng.NewRNG(string(g.gameCreationMenu.RNG))
 			if err != nil {
 				log.Fatal(fmt.Errorf("failed to initialize rng: %w", err))
 			}
 			g.World = NewWorld(rng, timeNow)
-
-			g.state = stateInGame
 		}
 	case stateInSettings:
 		nextState = g.settings.Update()
@@ -120,6 +123,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.menu.Draw(screen, g.assetLibrary)
 	case stateInSettings:
 		g.settings.Draw(screen, g.assetLibrary)
+	case stateCreatingGame:
+		g.gameCreationMenu.Draw(screen, g.assetLibrary)
 	case stateInGame:
 		g.World.Draw(screen, g.assetLibrary)
 	case stateLost:

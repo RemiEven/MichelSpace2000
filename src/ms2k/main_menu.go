@@ -38,7 +38,7 @@ func (menu *MainMenu) Update() int8 {
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		switch menu.state() {
 		case menuStateNewGame:
-			return stateInGame
+			return stateCreatingGame
 		case menuStateSettings:
 			return stateInSettings
 		case menuStateExit:
