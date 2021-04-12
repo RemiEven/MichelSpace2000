@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"math/rand"
+	"time"
 )
 
 const radix = '9' - '0' + 'z' - 'a' + 2
@@ -40,7 +42,7 @@ func toRune(value int64) rune {
 		return '0' + rune(value)
 	}
 	if '9'-'0'+1 <= value && value <= radix-1 {
-		return 'a' + rune(value)
+		return 'a' - ('9' - '0' + 1) + rune(value)
 	}
 	return -1
 }
@@ -52,9 +54,14 @@ func int64ToSeed(value int64) string {
 	for e >= 0 {
 		digit := value / posValue
 		seed = append(seed, toRune(digit))
-		value = value % posValue
-		posValue = posValue / radix
+		value %= posValue
+		posValue /= radix
 		e--
 	}
 	return string(seed)
+}
+
+// RandomSeed generates a random seed
+func RandomSeed() string {
+	return int64ToSeed(rand.NewSource(time.Now().Unix()).Int63())
 }

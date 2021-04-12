@@ -79,6 +79,9 @@ func (g *Game) Update() error {
 	switch g.state {
 	case stateInMenu:
 		nextState = g.menu.Update()
+		if nextState == stateCreatingGame {
+			g.gameCreationMenu.RandomizeSeed()
+		}
 	case stateCreatingGame:
 		nextState = g.gameCreationMenu.Update()
 		switch nextState {

@@ -6,6 +6,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
+
+	"github.com/RemiEven/michelSpace2000/src/ms2k/rng"
 )
 
 const maxSeedLength = 8
@@ -13,6 +15,10 @@ const maxSeedLength = 8
 type GameCreationMenu struct {
 	RNG     []rune
 	counter int
+}
+
+func (menu *GameCreationMenu) RandomizeSeed() {
+	menu.RNG = []rune(rng.RandomSeed())[:maxSeedLength]
 }
 
 // Update updates the game creation menu
