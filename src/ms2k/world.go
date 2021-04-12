@@ -222,6 +222,20 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *AssetLibrary) {
 	}
 
 	{
+		imageWidth, imageHeight := assetLibrary.images["earth"].Size()
+		if isInBox(0, 0, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {
+			dio := &ebiten.DrawImageOptions{}
+			scale := 2.0 * zoomFactor
+			dio.GeoM.Scale(scale, scale)
+			dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
+
+			translateToDrawPosition(Position{}, viewPortCenter, &dio.GeoM, zoomFactor)
+
+			screen.DrawImage(assetLibrary.images["earth"], dio)
+		}
+	}
+
+	{
 		imageWidth, imageHeight := assetLibrary.images["ship"].Size()
 		for _, ship := range w.Ships {
 			if isInBox(ship.Position.X, ship.Position.Y, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {

@@ -36,6 +36,7 @@ func NewAssetLibrary() (*AssetLibrary, error) {
 		"ships":  "modular_ships.png",
 		"planet": "Green Gas Planet.png",
 		"bg":     "back.png",
+		"earth":  "Earth.png",
 	} {
 		if err := al.loadImage(path, name); err != nil {
 			return nil, err
