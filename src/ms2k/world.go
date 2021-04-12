@@ -217,6 +217,18 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *AssetLibrary) {
 					dio.ColorM.ChangeHSV(0, 0, 1)
 				}
 				screen.DrawImage(assetLibrary.images["planet"], dio)
+				moonImageWidth, moonImageHeight := assetLibrary.images["moon"].Size()
+				for _, moon := range planet.Moons {
+					dio := &ebiten.DrawImageOptions{}
+					scale := zoomFactor
+					dio.GeoM.Scale(scale, scale)
+					dio.GeoM.Translate(-float64(moonImageWidth)/2.0*scale, -float64(moonImageHeight)/2.0*scale)
+					translateToDrawPosition(moon.Position, viewPortCenter, &dio.GeoM, zoomFactor)
+					if planet.Looted {
+						dio.ColorM.ChangeHSV(0, 0, 1)
+					}
+					screen.DrawImage(assetLibrary.images["moon"], dio)
+				}
 			}
 		}
 	}
