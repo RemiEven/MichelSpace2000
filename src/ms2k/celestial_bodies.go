@@ -24,3 +24,8 @@ func (planet *Planet) AddMoon(angle float64) {
 type Moon struct {
 	Position Position
 }
+
+// WormHole holds all information about a worm hole
+type WormHole struct {
+	Position Position
+}

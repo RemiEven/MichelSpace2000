@@ -22,6 +22,7 @@ const (
 // World contains data such as all the Planets & Ships of the game
 type World struct {
 	Planets           []*Planet
+	WormHoles         []*WormHole
 	GeneratedChunks   map[int]map[int]struct{}
 	Ships             []*Ship
 	selectedShipIndex int
@@ -200,6 +201,22 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *AssetLibrary) {
 	maxXToDisplay := viewPortCenter.X + (screenWidth/2/zoomFactor + viewportBorderMargin)
 	minYToDisplay := viewPortCenter.Y - (screenHeight/2/zoomFactor + viewportBorderMargin)
 	maxYToDisplay := viewPortCenter.Y + (screenHeight/2/zoomFactor + viewportBorderMargin)
+
+	{
+		imageWidth, imageHeight := assetLibrary.images["wormHole"].Size()
+		for _, wormHole := range w.WormHoles {
+			if isInBox(wormHole.Position.X, wormHole.Position.Y, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {
+				dio := &ebiten.DrawImageOptions{}
+				scale := 2 * zoomFactor
+				dio.GeoM.Scale(scale, scale)
+				dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
+
+				translateToDrawPosition(wormHole.Position, viewPortCenter, &dio.GeoM, zoomFactor)
+
+				screen.DrawImage(assetLibrary.images["wormHole"], dio)
+			}
+		}
+	}
 
 	{
 		imageWidth, imageHeight := assetLibrary.images["planet"].Size()
