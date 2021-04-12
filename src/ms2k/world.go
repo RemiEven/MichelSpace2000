@@ -239,8 +239,24 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *AssetLibrary) {
 	}
 
 	textBgColor := color.Black
-	ebitenutil.DrawRect(screen, 0, 0, 250, 90, textBgColor)
+	ebitenutil.DrawRect(screen, 0, 0, 250, 120, textBgColor)
 
-	text.Draw(screen, strconv.Itoa(w.score)+"/"+strconv.Itoa(10), fontFace, 0, 26, textColor)
-	text.Draw(screen, w.getSelectedShip().Position.String(), fontFace, 0, 54, textColor)
+	text.Draw(screen, strconv.Itoa(w.score)+"/"+strconv.Itoa(10), fontFace, 4, 26, textColor)
+	text.Draw(screen, w.getSelectedShip().Position.String(), fontFace, 4, 54, textColor)
+	text.Draw(screen, loseOperationToDoomsdayClockTime(w.lose), fontFace, 4, 110, textColor)
+}
+
+func loseOperationToDoomsdayClockTime(operation *Operation) string {
+	switch {
+	case operation.completedPercentage < 20:
+		return "23:55"
+	case operation.completedPercentage < 40:
+		return "23:56"
+	case operation.completedPercentage < 60:
+		return "23:57"
+	case operation.completedPercentage < 80:
+		return "23:58"
+	default:
+		return "23:59"
+	}
 }
