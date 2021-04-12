@@ -30,7 +30,7 @@ func (w *World) generateChunk(x, y int) {
 				}
 
 				if value >= 0.96 {
-					planet.AddMoon(float64((value - 0.96) * 100))
+					planet.AddMoon(float64((value - 0.96) / (1.0 - 0.96) * 4.0 * math.Pi))
 				}
 
 				w.Planets = append(w.Planets, planet)

@@ -230,9 +230,6 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *AssetLibrary) {
 				translateToDrawPosition(planet.Position, viewPortCenter, &dio.GeoM, zoomFactor)
 
 				dio.ColorM.ChangeHSV(planet.Hue, 1, 1)
-				if planet.Looted {
-					dio.ColorM.ChangeHSV(0, 0, 1)
-				}
 				screen.DrawImage(assetLibrary.images["planet"], dio)
 				moonImageWidth, moonImageHeight := assetLibrary.images["moon"].Size()
 				for _, moon := range planet.Moons {
@@ -241,10 +238,22 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *AssetLibrary) {
 					dio.GeoM.Scale(scale, scale)
 					dio.GeoM.Translate(-float64(moonImageWidth)/2.0*scale, -float64(moonImageHeight)/2.0*scale)
 					translateToDrawPosition(moon.Position, viewPortCenter, &dio.GeoM, zoomFactor)
-					if planet.Looted {
-						dio.ColorM.ChangeHSV(0, 0, 1)
-					}
 					screen.DrawImage(assetLibrary.images["moon"], dio)
+				}
+				if planet.Looted {
+					satelliteImageWidth, satelliteImageHeight := assetLibrary.images["satellite"].Size()
+					dio := &ebiten.DrawImageOptions{}
+					scale := zoomFactor
+					dio.GeoM.Scale(scale, scale)
+					dio.GeoM.Translate(-float64(satelliteImageWidth)/2.0*scale, -float64(satelliteImageHeight)/2.0*scale)
+
+					distance := 38
+					position := Position{
+						X: planet.Position.X + math.Sqrt2*float64(distance/2),
+						Y: planet.Position.Y - math.Sqrt2*float64(distance/2),
+					}
+					translateToDrawPosition(position, viewPortCenter, &dio.GeoM, zoomFactor)
+					screen.DrawImage(assetLibrary.images["satellite"], dio)
 				}
 			}
 		}
