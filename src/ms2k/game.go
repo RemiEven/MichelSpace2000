@@ -10,7 +10,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 
+	"github.com/RemiEven/michelSpace2000/src/ms2k/assets"
 	"github.com/RemiEven/michelSpace2000/src/ms2k/rng"
+	"github.com/RemiEven/michelSpace2000/src/ms2k/ui"
 )
 
 const (
@@ -35,7 +37,7 @@ var (
 
 // Game contains all loaded game assets with current game data
 type Game struct {
-	assetLibrary *AssetLibrary
+	assetLibrary *assets.Library
 
 	state int8
 
@@ -49,7 +51,7 @@ type Game struct {
 
 // Init initializes a game
 func (g *Game) Init() error {
-	assetLibrary, err := NewAssetLibrary()
+	assetLibrary, err := assets.NewAssetLibrary()
 	if err != nil {
 		return fmt.Errorf("failed to load asset library: %w", err)
 	}
@@ -57,7 +59,7 @@ func (g *Game) Init() error {
 
 	audioContext := NewAudioContext()
 
-	if _, err := NewPlayer(audioContext, g.assetLibrary.sounds["music"]); err != nil {
+	if _, err := NewPlayer(audioContext, g.assetLibrary.Sounds["music"]); err != nil {
 		return fmt.Errorf("failed to play music: %w", err)
 	}
 
@@ -96,10 +98,6 @@ func (g *Game) Update() error {
 		nextState = g.settings.Update()
 	case stateInGame:
 		nextState = g.World.Update(timeNow, g.settings)
-		switch nextState {
-		case stateLost, stateWon:
-			g.World = nil
-		}
 	case stateLost, stateWon:
 		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 			nextState = stateInMenu
@@ -131,22 +129,28 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	case stateInGame:
 		g.World.Draw(screen, g.assetLibrary)
 	case stateLost:
-		fontFace := g.assetLibrary.fontFaces["oxanium"]
+		g.World.Draw(screen, g.assetLibrary)
+		fontFace := g.assetLibrary.FontFaces["oxanium"]
 		fontFaceHeight := fontFace.Metrics().Height.Ceil()
+		fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()
 
 		{
 			titleLabel := "Game Over"
 			boundString := text.BoundString(fontFace, titleLabel)
-			text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*2, textColor)
+			ui.DrawBoxAround(screen, g.assetLibrary, (screenWidth-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight)
+			text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*11+fontShift, textColor)
 		}
 	case stateWon:
-		fontFace := g.assetLibrary.fontFaces["oxanium"]
+		g.World.Draw(screen, g.assetLibrary)
+		fontFace := g.assetLibrary.FontFaces["oxanium"]
 		fontFaceHeight := fontFace.Metrics().Height.Ceil()
+		fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()
 
 		{
 			titleLabel := "Victory"
 			boundString := text.BoundString(fontFace, titleLabel)
-			text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*2, textColor)
+			ui.DrawBoxAround(screen, g.assetLibrary, (screenWidth-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight)
+			text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*11+fontShift, textColor)
 		}
 	}
 

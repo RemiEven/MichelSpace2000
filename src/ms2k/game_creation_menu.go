@@ -7,7 +7,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 
+	"github.com/RemiEven/michelSpace2000/src/ms2k/assets"
 	"github.com/RemiEven/michelSpace2000/src/ms2k/rng"
+	"github.com/RemiEven/michelSpace2000/src/ms2k/ui"
 )
 
 const maxSeedLength = 8
@@ -66,14 +68,19 @@ func (menu *GameCreationMenu) repeatingKeyPressed(key ebiten.Key) bool {
 }
 
 // Draw draws the game creation menu
-func (menu *GameCreationMenu) Draw(screen *ebiten.Image, assetLibrary *AssetLibrary) {
-	fontFace := assetLibrary.fontFaces["oxanium"]
+func (menu *GameCreationMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
+	fontFace := assetLibrary.FontFaces["oxanium"]
 	fontFaceHeight := fontFace.Metrics().Height.Ceil()
+	fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()
+
+	baseRNGSeedLabel := "RNG seed: "
+	largestBoundString := text.BoundString(fontFace, baseRNGSeedLabel+strings.Repeat("w", maxSeedLength))
 
 	{
 		titleLabel := "Game creation"
 		boundString := text.BoundString(fontFace, titleLabel)
-		text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*2, textColor)
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*5, largestBoundString.Dx(), fontFaceHeight)
+		text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*5+fontShift, textColor)
 	}
 
 	{
@@ -82,7 +89,8 @@ func (menu *GameCreationMenu) Draw(screen *ebiten.Image, assetLibrary *AssetLibr
 		if menu.counter < 30 && len(menu.RNG) < maxSeedLength {
 			rngSeedLabel += "_"
 		}
-		boundString := text.BoundString(fontFace, baseRNGSeedLabel+strings.Repeat("9", maxSeedLength))
-		text.Draw(screen, rngSeedLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*4, textColor)
+		boundString := text.BoundString(fontFace, baseRNGSeedLabel+strings.Repeat("w", maxSeedLength))
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*9, largestBoundString.Dx(), fontFaceHeight)
+		text.Draw(screen, rngSeedLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*9+fontShift, textColor)
 	}
 }

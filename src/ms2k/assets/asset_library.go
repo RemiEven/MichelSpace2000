@@ -1,4 +1,4 @@
-package ms2k
+package assets
 
 import (
 	"bytes"
@@ -14,39 +14,40 @@ import (
 	"golang.org/x/image/font/opentype"
 )
 
-//go:embed assets
+//go:embed files
 var assetFS embed.FS
 
-// AssetLibrary loads and holds all assets of the game
-type AssetLibrary struct {
-	images    map[string]*ebiten.Image
-	sounds    map[string][]byte
-	fontFaces map[string]font.Face
+// Library loads and holds all assets of the game
+type Library struct {
+	Images    map[string]*ebiten.Image
+	Sounds    map[string][]byte
+	FontFaces map[string]font.Face
 }
 
 // NewAssetLibrary creates a new asset library with all assets loaded
-func NewAssetLibrary() (*AssetLibrary, error) {
-	al := &AssetLibrary{
-		images:    map[string]*ebiten.Image{},
-		sounds:    map[string][]byte{},
-		fontFaces: map[string]font.Face{},
+func NewAssetLibrary() (*Library, error) {
+	al := &Library{
+		Images:    map[string]*ebiten.Image{},
+		Sounds:    map[string][]byte{},
+		FontFaces: map[string]font.Face{},
 	}
 
 	for name, path := range map[string]string{
-		"ships":     "modular_ships.png",
-		"planet":    "Green Gas Planet.png",
-		"bg":        "back.png",
-		"earth":     "Earth.png",
-		"moon":      "RedMoon.png",
-		"wormHole":  "Hurricane.png",
-		"satellite": "Satellite.png",
+		"ships":      "modular_ships.png",
+		"planet":     "Green Gas Planet.png",
+		"bg":         "back.png",
+		"earth":      "Earth.png",
+		"moon":       "RedMoon.png",
+		"wormHole":   "Hurricane.png",
+		"satellite":  "Satellite.png",
+		"ui/listbox": "ui/listbox_default.png",
 	} {
 		if err := al.loadImage(path, name); err != nil {
 			return nil, err
 		}
 	}
 
-	al.images["ship"] = al.images["ships"].SubImage(image.Rect(80, 320, 112, 352)).(*ebiten.Image)
+	al.Images["ship"] = al.Images["ships"].SubImage(image.Rect(80, 320, 112, 352)).(*ebiten.Image)
 
 	if err := al.loadSound("Hardmoon_-_Deep_space.mp3", "music"); err != nil {
 		return nil, err
@@ -59,8 +60,8 @@ func NewAssetLibrary() (*AssetLibrary, error) {
 	return al, nil
 }
 
-func (al *AssetLibrary) loadImage(path, name string) error {
-	content, err := assetFS.ReadFile("assets/img/" + path)
+func (al *Library) loadImage(path, name string) error {
+	content, err := assetFS.ReadFile("files/img/" + path)
 	if err != nil {
 		return fmt.Errorf("failed to load image [%q]: %w", name, err)
 	}
@@ -69,22 +70,22 @@ func (al *AssetLibrary) loadImage(path, name string) error {
 	if err != nil {
 		return fmt.Errorf("failed to decode image [%q]: %w", name, err)
 	}
-	al.images[name] = ebiten.NewImageFromImage(img)
+	al.Images[name] = ebiten.NewImageFromImage(img)
 	return nil
 }
 
-func (al *AssetLibrary) loadSound(path, name string) error {
-	sound, err := assetFS.ReadFile("assets/audio/" + path)
+func (al *Library) loadSound(path, name string) error {
+	sound, err := assetFS.ReadFile("files/audio/" + path)
 	if err != nil {
 		return fmt.Errorf("failed to load sound [%q]: %w", name, err)
 	}
 
-	al.sounds[name] = sound
+	al.Sounds[name] = sound
 	return nil
 }
 
-func (al *AssetLibrary) loadFontFace(path, name string) error {
-	fontFileData, err := assetFS.ReadFile("assets/font/" + path)
+func (al *Library) loadFontFace(path, name string) error {
+	fontFileData, err := assetFS.ReadFile("files/font/" + path)
 	if err != nil {
 		return fmt.Errorf("failed to read font [%q]: %w", name, err)
 	}
@@ -103,6 +104,6 @@ func (al *AssetLibrary) loadFontFace(path, name string) error {
 		return fmt.Errorf("failed to create face from parsed font [%q]: %w", name, err)
 	}
 
-	al.fontFaces[name] = fontFace
+	al.FontFaces[name] = fontFace
 	return nil
 }

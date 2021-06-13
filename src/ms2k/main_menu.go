@@ -7,6 +7,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
+
+	"github.com/RemiEven/michelSpace2000/src/ms2k/assets"
+	"github.com/RemiEven/michelSpace2000/src/ms2k/ui"
 )
 
 const (
@@ -55,14 +58,19 @@ func (menu *MainMenu) Update() int8 {
 }
 
 // Draw draws the MainMenu
-func (menu *MainMenu) Draw(screen *ebiten.Image, assetLibrary *AssetLibrary) {
-	fontFace := assetLibrary.fontFaces["oxanium"]
+func (menu *MainMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
+	fontFace := assetLibrary.FontFaces["oxanium"]
 	fontFaceHeight := fontFace.Metrics().Height.Ceil()
+	fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()
+
+	longestLabel := "MichelSpace2000"
+	largestBoundString := text.BoundString(fontFace, longestLabel)
 
 	{
 		titleLabel := "MichelSpace2000"
 		boundString := text.BoundString(fontFace, titleLabel)
-		text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*2, textColor)
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*5, largestBoundString.Dx(), fontFaceHeight)
+		text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*5+fontShift, textColor)
 	}
 
 	color := func(menuOption int8) color.Color {
@@ -75,16 +83,19 @@ func (menu *MainMenu) Draw(screen *ebiten.Image, assetLibrary *AssetLibrary) {
 	{
 		newGameLabel := "New game"
 		boundString := text.BoundString(fontFace, newGameLabel)
-		text.Draw(screen, newGameLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*4, color(menuStateNewGame))
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*9, largestBoundString.Dx(), fontFaceHeight)
+		text.Draw(screen, newGameLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*9+fontShift, color(menuStateNewGame))
 	}
 	{
 		settingsLabel := "Controls"
 		boundString := text.BoundString(fontFace, settingsLabel)
-		text.Draw(screen, settingsLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*5, color(menuStateSettings))
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*11, largestBoundString.Dx(), fontFaceHeight)
+		text.Draw(screen, settingsLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*11+fontShift, color(menuStateSettings))
 	}
 	{
 		exitLabel := "Exit"
 		boundString := text.BoundString(fontFace, exitLabel)
-		text.Draw(screen, exitLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*6, color(menuStateExit))
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*13, largestBoundString.Dx(), fontFaceHeight)
+		text.Draw(screen, exitLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*13+fontShift, color(menuStateExit))
 	}
 }
