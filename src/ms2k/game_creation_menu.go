@@ -79,7 +79,7 @@ func (menu *GameCreationMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Li
 	{
 		titleLabel := "Game creation"
 		boundString := text.BoundString(fontFace, titleLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*5, largestBoundString.Dx(), fontFaceHeight)
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*5, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
 		text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*5+fontShift, textColor)
 	}
 
@@ -90,7 +90,7 @@ func (menu *GameCreationMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Li
 			rngSeedLabel += "_"
 		}
 		boundString := text.BoundString(fontFace, baseRNGSeedLabel+strings.Repeat("w", maxSeedLength))
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*9, largestBoundString.Dx(), fontFaceHeight)
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*9, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
 		text.Draw(screen, rngSeedLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*9+fontShift, textColor)
 	}
 }

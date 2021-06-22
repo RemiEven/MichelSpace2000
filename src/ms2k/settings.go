@@ -48,18 +48,18 @@ func (settings *Settings) Draw(screen *ebiten.Image, assetLibrary *assets.Librar
 	{
 		titleLabel := "MichelSpace2000 - Controls"
 		boundString := text.BoundString(fontFace, titleLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*5, largestBoundString.Dx(), fontFaceHeight)
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*5, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
 		text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*5+fontShift, textColor)
 	}
 
 	{
 		keyMappingLabel := "Key mapping: < " + settings.keyboardLayout + " >"
 		boundString := text.BoundString(fontFace, keyMappingLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*9, largestBoundString.Dx(), fontFaceHeight)
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*9, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
 		text.Draw(screen, keyMappingLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*9+fontShift, textColor)
 	}
 
-	ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*11, largestBoundString.Dx(), fontFaceHeight*8)
+	ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*11, largestBoundString.Dx(), fontFaceHeight*8, ui.AllBorders)
 
 	{
 		previousShipLabel := "Select previous ship: " + ebitenKeyToString(settings.keyboardLayout, keyMapping.PreviousShip)

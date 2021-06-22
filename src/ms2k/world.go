@@ -1,18 +1,17 @@
 package ms2k
 
 import (
-	"image/color"
 	"math"
 	"strconv"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 
 	"github.com/RemiEven/michelSpace2000/src/ms2k/assets"
 	"github.com/RemiEven/michelSpace2000/src/ms2k/rng"
+	"github.com/RemiEven/michelSpace2000/src/ms2k/ui"
 )
 
 const (
@@ -291,9 +290,7 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 		}
 	}
 
-	textBgColor := color.Black
-	ebitenutil.DrawRect(screen, 0, 0, 250, 120, textBgColor)
-
+	ui.DrawBoxAround(screen, assetLibrary, 0, 0, 250, 120, ui.Bottom|ui.Right)
 	text.Draw(screen, strconv.Itoa(w.score)+"/"+strconv.Itoa(10), fontFace, 4, 26, textColor)
 	text.Draw(screen, w.getSelectedShip().Position.String(), fontFace, 4, 54, textColor)
 	text.Draw(screen, loseOperationToDoomsdayClockTime(w.lose), fontFace, 4, 110, textColor)

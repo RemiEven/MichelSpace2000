@@ -11,9 +11,20 @@ import (
 	"github.com/RemiEven/michelSpace2000/src/ms2k/assets"
 )
 
+type BorderOption uint8
+
+const (
+	Left       = BorderOption(1 << iota)
+	Right      = BorderOption(1 << iota)
+	Top        = BorderOption(1 << iota)
+	Bottom     = BorderOption(1 << iota)
+	AllBorders = Left | Right | Top | Bottom
+	NoBorder   = BorderOption(0)
+)
+
 var boxBgColor = color.RGBA{R: 0x94, G: 0xa9, B: 0xaa, A: 0xff}
 
-func DrawBoxAround(screen *ebiten.Image, assetLibrary *assets.Library, x, y, width, height int) {
+func DrawBoxAround(screen *ebiten.Image, assetLibrary *assets.Library, x, y, width, height int, borderOption BorderOption) {
 	if int(width)%2 == 1 {
 		width++
 	}
@@ -22,90 +33,106 @@ func DrawBoxAround(screen *ebiten.Image, assetLibrary *assets.Library, x, y, wid
 	}
 	scale := 2
 	horizontalBorderHeightPx := 6
-	intermediaryImage := ebiten.NewImage(int(width/scale)+2*horizontalBorderHeightPx, int(height/scale)+2*horizontalBorderHeightPx)
-	ebitenutil.DrawRect(intermediaryImage, float64(horizontalBorderHeightPx), float64(horizontalBorderHeightPx), float64(width/scale), float64(height/scale), boxBgColor)
+
+	var (
+		drawLeftBorder   = (borderOption | Left) == borderOption
+		drawRightBorder  = (borderOption | Right) == borderOption
+		drawTopBorder    = (borderOption | Top) == borderOption
+		drawBottomBorder = (borderOption | Bottom) == borderOption
+	)
+
+	intermediaryImage := ebiten.NewImage(
+		int(width/scale)+numberOfTrues(drawLeftBorder, drawRightBorder)*horizontalBorderHeightPx,
+		int(height/scale)+numberOfTrues(drawTopBorder, drawBottomBorder)*horizontalBorderHeightPx,
+	)
+	ebitenutil.DrawRect(intermediaryImage, float64(numberOfTrues(drawLeftBorder)*horizontalBorderHeightPx), float64(numberOfTrues(drawTopBorder)*horizontalBorderHeightPx), float64(width/scale), float64(height/scale), boxBgColor)
 
 	baseImage := assetLibrary.Images["ui/listbox"]
 	baseImageWidth, baseImageHeight := baseImage.Size()
-	topBorder := baseImage.SubImage(image.Rect(40, 2, 41, 2+horizontalBorderHeightPx)).(*ebiten.Image)
-	bottomBorder := baseImage.SubImage(image.Rect(40, baseImageHeight-horizontalBorderHeightPx-2, 41, baseImageHeight-2)).(*ebiten.Image)
-	topLeftCorner := baseImage.SubImage(image.Rect(1, 2, 1+horizontalBorderHeightPx, 2+horizontalBorderHeightPx)).(*ebiten.Image)
-	topRightCorner := baseImage.SubImage(image.Rect(baseImageWidth-horizontalBorderHeightPx-2, 2, baseImageWidth-2, 2+horizontalBorderHeightPx)).(*ebiten.Image)
-	bottomLeftCorner := baseImage.SubImage(image.Rect(1, baseImageHeight-2-horizontalBorderHeightPx, 1+horizontalBorderHeightPx, baseImageHeight-2)).(*ebiten.Image)
-	bottomRightCorner := baseImage.SubImage(image.Rect(baseImageWidth-horizontalBorderHeightPx-2, baseImageHeight-2-horizontalBorderHeightPx, baseImageWidth-2, baseImageHeight-2)).(*ebiten.Image)
 
-	{
-		// Top border
+	var (
+		topBorder         = baseImage.SubImage(image.Rect(40, 2, 41, 2+horizontalBorderHeightPx)).(*ebiten.Image)
+		bottomBorder      = baseImage.SubImage(image.Rect(40, baseImageHeight-horizontalBorderHeightPx-2, 41, baseImageHeight-2)).(*ebiten.Image)
+		topLeftCorner     = baseImage.SubImage(image.Rect(1, 2, 1+horizontalBorderHeightPx, 2+horizontalBorderHeightPx)).(*ebiten.Image)
+		topRightCorner    = baseImage.SubImage(image.Rect(baseImageWidth-horizontalBorderHeightPx-2, 2, baseImageWidth-2, 2+horizontalBorderHeightPx)).(*ebiten.Image)
+		bottomLeftCorner  = baseImage.SubImage(image.Rect(1, baseImageHeight-2-horizontalBorderHeightPx, 1+horizontalBorderHeightPx, baseImageHeight-2)).(*ebiten.Image)
+		bottomRightCorner = baseImage.SubImage(image.Rect(baseImageWidth-horizontalBorderHeightPx-2, baseImageHeight-2-horizontalBorderHeightPx, baseImageWidth-2, baseImageHeight-2)).(*ebiten.Image)
+	)
+
+	if drawTopBorder {
 		dio := &ebiten.DrawImageOptions{}
-		dio.GeoM.Translate(float64(horizontalBorderHeightPx), 0)
+		dio.GeoM.Translate(float64(numberOfTrues(drawLeftBorder)*horizontalBorderHeightPx), 0)
 		for i := 0; i < int(width/scale); i++ {
 			intermediaryImage.DrawImage(topBorder, dio)
 			dio.GeoM.Translate(1, 0)
 		}
 	}
 
-	{
-		// Bottom border
+	if drawBottomBorder {
 		dio := &ebiten.DrawImageOptions{}
-		dio.GeoM.Translate(float64(horizontalBorderHeightPx), float64(height/scale+horizontalBorderHeightPx))
+		dio.GeoM.Translate(float64(numberOfTrues(drawLeftBorder)*horizontalBorderHeightPx), float64(height/scale+numberOfTrues(drawTopBorder)*horizontalBorderHeightPx))
 		for i := 0; i < int(width/scale); i++ {
 			intermediaryImage.DrawImage(bottomBorder, dio)
 			dio.GeoM.Translate(1, 0)
 		}
 	}
 
-	{
-		// Left border
+	if drawLeftBorder {
 		dio := &ebiten.DrawImageOptions{}
 		dio.GeoM.Rotate(-math.Pi / 2)
-		dio.GeoM.Translate(0, 1+float64(horizontalBorderHeightPx))
+		dio.GeoM.Translate(0, 1+float64(numberOfTrues(drawTopBorder)*horizontalBorderHeightPx))
 		for i := 0; i < int(height/scale); i++ {
 			intermediaryImage.DrawImage(topBorder, dio)
 			dio.GeoM.Translate(0, 1)
 		}
 	}
 
-	{
-		// Right border
+	if drawRightBorder {
 		dio := &ebiten.DrawImageOptions{}
 		dio.GeoM.Rotate(-math.Pi / 2)
 		dio.GeoM.Translate(0, 1)
-		dio.GeoM.Translate(float64(width/scale+horizontalBorderHeightPx), float64(horizontalBorderHeightPx))
+		dio.GeoM.Translate(float64(width/scale+numberOfTrues(drawLeftBorder)*horizontalBorderHeightPx), float64(numberOfTrues(drawTopBorder)*horizontalBorderHeightPx))
 		for i := 0; i < int(height/scale); i++ {
 			intermediaryImage.DrawImage(bottomBorder, dio)
 			dio.GeoM.Translate(0, 1)
 		}
 	}
 
-	{
-		// Top left corner
+	if drawTopBorder && drawLeftBorder {
 		dio := &ebiten.DrawImageOptions{}
 		intermediaryImage.DrawImage(topLeftCorner, dio)
 	}
 
-	{
-		// Top right corner
+	if drawTopBorder && drawRightBorder {
 		dio := &ebiten.DrawImageOptions{}
-		dio.GeoM.Translate(float64(width/scale+horizontalBorderHeightPx), 0)
+		dio.GeoM.Translate(float64(width/scale+numberOfTrues(drawLeftBorder)*horizontalBorderHeightPx), 0)
 		intermediaryImage.DrawImage(topRightCorner, dio)
 	}
 
-	{
-		// Bottom left corner
+	if drawBottomBorder && drawLeftBorder {
 		dio := &ebiten.DrawImageOptions{}
-		dio.GeoM.Translate(0, float64(height/scale+horizontalBorderHeightPx))
+		dio.GeoM.Translate(0, float64(height/scale+numberOfTrues(drawTopBorder)*horizontalBorderHeightPx))
 		intermediaryImage.DrawImage(bottomLeftCorner, dio)
 	}
 
-	{
-		// Bottom right corner
+	if drawBottomBorder && drawRightBorder {
 		dio := &ebiten.DrawImageOptions{}
-		dio.GeoM.Translate(float64(width/scale+horizontalBorderHeightPx), float64(height/scale+horizontalBorderHeightPx))
+		dio.GeoM.Translate(float64(width/scale+numberOfTrues(drawLeftBorder)*horizontalBorderHeightPx), float64(height/scale+numberOfTrues(drawTopBorder)*horizontalBorderHeightPx))
 		intermediaryImage.DrawImage(bottomRightCorner, dio)
 	}
 
 	dio := &ebiten.DrawImageOptions{}
 	dio.GeoM.Scale(float64(scale), float64(scale))
-	dio.GeoM.Translate(float64(x-scale*horizontalBorderHeightPx), float64(y-scale*horizontalBorderHeightPx))
+	dio.GeoM.Translate(float64(x-numberOfTrues(drawLeftBorder)*scale*horizontalBorderHeightPx), float64(y-numberOfTrues(drawTopBorder)*scale*horizontalBorderHeightPx))
 	screen.DrawImage(intermediaryImage, dio)
+}
+
+func numberOfTrues(conditions ...bool) int {
+	number := 0
+	for _, b := range conditions {
+		if b {
+			number++
+		}
+	}
+	return number
 }

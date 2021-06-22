@@ -137,7 +137,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		{
 			titleLabel := "Game Over"
 			boundString := text.BoundString(fontFace, titleLabel)
-			ui.DrawBoxAround(screen, g.assetLibrary, (screenWidth-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight)
+			ui.DrawBoxAround(screen, g.assetLibrary, (screenWidth-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight, ui.AllBorders)
 			text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*11+fontShift, textColor)
 		}
 	case stateWon:
@@ -149,7 +149,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		{
 			titleLabel := "Victory"
 			boundString := text.BoundString(fontFace, titleLabel)
-			ui.DrawBoxAround(screen, g.assetLibrary, (screenWidth-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight)
+			ui.DrawBoxAround(screen, g.assetLibrary, (screenWidth-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight, ui.AllBorders)
 			text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*11+fontShift, textColor)
 		}
 	}

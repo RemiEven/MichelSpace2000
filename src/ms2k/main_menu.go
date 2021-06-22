@@ -69,7 +69,7 @@ func (menu *MainMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 	{
 		titleLabel := "MichelSpace2000"
 		boundString := text.BoundString(fontFace, titleLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*5, largestBoundString.Dx(), fontFaceHeight)
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*5, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
 		text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*5+fontShift, textColor)
 	}
 
@@ -83,19 +83,19 @@ func (menu *MainMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 	{
 		newGameLabel := "New game"
 		boundString := text.BoundString(fontFace, newGameLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*9, largestBoundString.Dx(), fontFaceHeight)
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*9, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
 		text.Draw(screen, newGameLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*9+fontShift, color(menuStateNewGame))
 	}
 	{
 		settingsLabel := "Controls"
 		boundString := text.BoundString(fontFace, settingsLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*11, largestBoundString.Dx(), fontFaceHeight)
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*11, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
 		text.Draw(screen, settingsLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*11+fontShift, color(menuStateSettings))
 	}
 	{
 		exitLabel := "Exit"
 		boundString := text.BoundString(fontFace, exitLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*13, largestBoundString.Dx(), fontFaceHeight)
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*13, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
 		text.Draw(screen, exitLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*13+fontShift, color(menuStateExit))
 	}
 }
