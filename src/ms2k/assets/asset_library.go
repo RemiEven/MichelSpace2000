@@ -3,8 +3,11 @@ package assets
 import (
 	"bytes"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"image"
+	"path/filepath"
+	"strings"
 
 	_ "image/png" // needed to correctly load PNG files
 
@@ -19,17 +22,27 @@ var assetFS embed.FS
 
 // Library loads and holds all assets of the game
 type Library struct {
-	Images    map[string]*ebiten.Image
-	Sounds    map[string][]byte
-	FontFaces map[string]font.Face
+	Images        map[string]*ebiten.Image
+	ImagesCredits map[string]Credit
+
+	Sounds        map[string][]byte
+	SoundsCredits map[string]Credit
+
+	FontFaces        map[string]font.Face
+	FontFacesCredits map[string]Credit
 }
 
 // NewAssetLibrary creates a new asset library with all assets loaded
 func NewAssetLibrary() (*Library, error) {
 	al := &Library{
-		Images:    map[string]*ebiten.Image{},
-		Sounds:    map[string][]byte{},
-		FontFaces: map[string]font.Face{},
+		Images:        map[string]*ebiten.Image{},
+		ImagesCredits: map[string]Credit{},
+
+		Sounds:        map[string][]byte{},
+		SoundsCredits: map[string]Credit{},
+
+		FontFaces:        map[string]font.Face{},
+		FontFacesCredits: map[string]Credit{},
 	}
 
 	for name, path := range map[string]string{
@@ -61,7 +74,8 @@ func NewAssetLibrary() (*Library, error) {
 }
 
 func (al *Library) loadImage(path, name string) error {
-	content, err := assetFS.ReadFile("files/img/" + path)
+	absolutePath := "files/img/" + path
+	content, err := assetFS.ReadFile(absolutePath)
 	if err != nil {
 		return fmt.Errorf("failed to load image [%q]: %w", name, err)
 	}
@@ -71,21 +85,37 @@ func (al *Library) loadImage(path, name string) error {
 		return fmt.Errorf("failed to decode image [%q]: %w", name, err)
 	}
 	al.Images[name] = ebiten.NewImageFromImage(img)
+
+	credit, err := loadCredits(absolutePath)
+	if err != nil {
+		return fmt.Errorf("failed to load credit file for [%q]: %w", name, err)
+	}
+	al.ImagesCredits[name] = *credit
+
 	return nil
 }
 
 func (al *Library) loadSound(path, name string) error {
-	sound, err := assetFS.ReadFile("files/audio/" + path)
+	absolutePath := "files/audio/" + path
+	sound, err := assetFS.ReadFile(absolutePath)
 	if err != nil {
 		return fmt.Errorf("failed to load sound [%q]: %w", name, err)
 	}
-
 	al.Sounds[name] = sound
+
+	credit, err := loadCredits(absolutePath)
+	if err != nil {
+		return fmt.Errorf("failed to load credit file for [%q]: %w", name, err)
+	}
+	al.SoundsCredits[name] = *credit
+
 	return nil
 }
 
 func (al *Library) loadFontFace(path, name string) error {
-	fontFileData, err := assetFS.ReadFile("files/font/" + path)
+	absolutePath := "files/font/" + path
+
+	fontFileData, err := assetFS.ReadFile(absolutePath)
 	if err != nil {
 		return fmt.Errorf("failed to read font [%q]: %w", name, err)
 	}
@@ -105,5 +135,26 @@ func (al *Library) loadFontFace(path, name string) error {
 	}
 
 	al.FontFaces[name] = fontFace
+
+	credit, err := loadCredits(absolutePath)
+	if err != nil {
+		return fmt.Errorf("failed to load credit file for [%q]: %w", name, err)
+	}
+	al.FontFacesCredits[name] = *credit
+
 	return nil
+}
+
+func loadCredits(absolutePath string) (*Credit, error) {
+	absoluteCreditPath := strings.TrimSuffix(absolutePath, filepath.Ext(absolutePath)) + ".credit.json"
+	rawCredits, err := assetFS.ReadFile(absoluteCreditPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read: %w", err)
+	}
+	credit := Credit{}
+	if err := json.Unmarshal(rawCredits, &credit); err != nil {
+		return nil, fmt.Errorf("failed to parse: %w", err)
+	}
+
+	return &credit, nil
 }

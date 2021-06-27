@@ -15,11 +15,12 @@ import (
 const (
 	menuStateNewGame = iota
 	menuStateSettings
+	menuStateCredits
 	menuStateExit
 )
 
 var (
-	menuStates    = []int8{menuStateNewGame, menuStateSettings, menuStateExit}
+	menuStates    = []int8{menuStateNewGame, menuStateSettings, menuStateCredits, menuStateExit}
 	lenMenuStates = len(menuStates)
 )
 
@@ -44,6 +45,8 @@ func (menu *MainMenu) Update() int8 {
 			return stateCreatingGame
 		case menuStateSettings:
 			return stateInSettings
+		case menuStateCredits:
+			return stateInCredits
 		case menuStateExit:
 			os.Exit(0)
 		}
@@ -95,9 +98,15 @@ func (menu *MainMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 		text.Draw(screen, settingsLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*11+fontShift, color(menuStateSettings))
 	}
 	{
+		creditsLabel := "Credits"
+		boundString := text.BoundString(fontFace, creditsLabel)
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*13, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
+		text.Draw(screen, creditsLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*13+fontShift, color(menuStateCredits))
+	}
+	{
 		exitLabel := "Exit"
 		boundString := text.BoundString(fontFace, exitLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*13, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
-		text.Draw(screen, exitLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*13+fontShift, color(menuStateExit))
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*15, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
+		text.Draw(screen, exitLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*15+fontShift, color(menuStateExit))
 	}
 }

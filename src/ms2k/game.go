@@ -22,6 +22,7 @@ const (
 	stateInSettings
 	stateWon
 	stateLost
+	stateInCredits
 )
 
 const (
@@ -47,6 +48,8 @@ type Game struct {
 	settings *Settings
 
 	World *World
+
+	creditScreen *CreditScreen
 }
 
 // Init initializes a game
@@ -69,6 +72,7 @@ func (g *Game) Init() error {
 	g.settings = &Settings{
 		keyboardLayout: keyboardLayoutQwerty,
 	}
+	g.creditScreen = NewCreditScreen(assetLibrary)
 
 	return nil
 }
@@ -103,6 +107,8 @@ func (g *Game) Update() error {
 			nextState = stateInMenu
 			g.menu.selectedIndex = menuStateNewGame
 		}
+	case stateInCredits:
+		nextState = g.creditScreen.Update()
 	}
 	g.state = nextState
 
@@ -152,8 +158,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			ui.DrawBoxAround(screen, g.assetLibrary, (screenWidth-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight, ui.AllBorders)
 			text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*11+fontShift, textColor)
 		}
+	case stateInCredits:
+		g.creditScreen.Draw(screen, g.assetLibrary)
 	}
-
 }
 
 func translateToDrawPosition(gamePosition, viewPortCenter Position, geoM *ebiten.GeoM, zoomFactor float64) {
