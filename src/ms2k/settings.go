@@ -38,6 +38,8 @@ func (settings *Settings) Update() int8 {
 
 // Draw draws the settings
 func (settings *Settings) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
+	drawSpaceBackground(screen, assetLibrary, Position{})
+
 	fontFace := assetLibrary.FontFaces["oxanium"]
 	fontFaceHeight := fontFace.Metrics().Height.Ceil()
 	fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()

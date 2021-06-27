@@ -178,24 +178,7 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 
 	viewPortCenter := w.getSelectedShip().Position
 
-	scale := 1.0
-	parallaxFactor := math.Pow(3.0, zoomFactor)
-	imageWidth, imageHeight := assetLibrary.Images["bg"].Size()
-	topLeftBackgroundTileX := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*viewPortCenter.X - screenWidth/2 /*/zoomFactor*/) / (float64(imageWidth) * scale)))
-	topLeftBackgroundTileY := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*viewPortCenter.Y - screenHeight/2 /*/zoomFactor*/) / (float64(imageHeight) * scale)))
-	bottomRightBackgroundTileX := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*viewPortCenter.X + screenWidth/2 /*/zoomFactor*/) / (float64(imageWidth) * scale)))
-	bottomRightBackgroundTileY := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*viewPortCenter.Y + screenHeight/2 /*/zoomFactor*/) / (float64(imageHeight) * scale)))
-	x := topLeftBackgroundTileX
-	for x <= bottomRightBackgroundTileX {
-		y := topLeftBackgroundTileY
-		for y <= bottomRightBackgroundTileY {
-			dio := &ebiten.DrawImageOptions{}
-			dio.GeoM.Translate(float64(x)*scale*float64(imageWidth)+screenWidth/2.0 /*/zoomFactor*/ -(parallaxFactor-1.0)*viewPortCenter.X/parallaxFactor, float64(y)*scale*float64(imageHeight)+screenHeight/2.0 /*/zoomFactor*/ -(parallaxFactor-1.0)*viewPortCenter.Y/parallaxFactor)
-			screen.DrawImage(assetLibrary.Images["bg"], dio)
-			y++
-		}
-		x++
-	}
+	drawSpaceBackground(screen, assetLibrary, viewPortCenter)
 
 	minXToDisplay := viewPortCenter.X - (screenWidth/2/zoomFactor + viewportBorderMargin)
 	maxXToDisplay := viewPortCenter.X + (screenWidth/2/zoomFactor + viewportBorderMargin)

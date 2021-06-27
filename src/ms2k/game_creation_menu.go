@@ -69,6 +69,8 @@ func (menu *GameCreationMenu) repeatingKeyPressed(key ebiten.Key) bool {
 
 // Draw draws the game creation menu
 func (menu *GameCreationMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
+	drawSpaceBackground(screen, assetLibrary, Position{})
+
 	fontFace := assetLibrary.FontFaces["oxanium"]
 	fontFaceHeight := fontFace.Metrics().Height.Ceil()
 	fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()
