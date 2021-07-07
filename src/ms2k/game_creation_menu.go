@@ -41,10 +41,8 @@ func (menu *GameCreationMenu) Update() int8 {
 		menu.RNG = menu.RNG[:maxSeedLength]
 	}
 
-	if menu.repeatingKeyPressed(ebiten.KeyBackspace) {
-		if len(menu.RNG) > 0 {
-			menu.RNG = menu.RNG[:len(menu.RNG)-1]
-		}
+	if menu.repeatingKeyPressed(ebiten.KeyBackspace) && len(menu.RNG) > 0 {
+		menu.RNG = menu.RNG[:len(menu.RNG)-1]
 	}
 
 	menu.counter++
