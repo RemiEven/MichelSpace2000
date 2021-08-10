@@ -32,6 +32,8 @@ type World struct {
 	score int
 
 	lose *Operation
+
+	displayedPlanetName string
 }
 
 // NewWorld creates a new world
@@ -125,8 +127,15 @@ func (w *World) Update(timeNow time.Time, settings *Settings) int8 {
 	w.ensureChunksAroundAreGenerated(selectedShip.Position)
 
 	for _, ship := range w.Ships {
+		var closestPlanet *Planet
+		distanceToClosestPlanet := math.MaxFloat64
 		for _, planet := range w.Planets {
-			if !planet.Looted && ship.Position.DistanceTo(&planet.Position) < 50 {
+			distanceToShip := ship.Position.DistanceTo(&planet.Position)
+			if distanceToShip < distanceToClosestPlanet {
+				distanceToClosestPlanet = distanceToShip
+				closestPlanet = planet
+			}
+			if !planet.Looted && distanceToShip < 50 {
 				if _, ok := ship.PlanetScans[planet]; !ok {
 					ship.PlanetScans[planet] = &Operation{
 						lastUpdate: timeNow,
@@ -135,6 +144,15 @@ func (w *World) Update(timeNow time.Time, settings *Settings) int8 {
 				}
 			}
 		}
+
+		if ship == selectedShip {
+			if distanceToClosestPlanet < 50 {
+				w.displayedPlanetName = closestPlanet.Name
+			} else {
+				w.displayedPlanetName = ""
+			}
+		}
+
 		for planet, scan := range ship.PlanetScans {
 			if !planet.Looted && ship.Position.DistanceTo(&planet.Position) < 50 {
 				scan.Update(timeNow)
@@ -175,6 +193,8 @@ func (w *World) selectPreviousShip() {
 // Draw draws the world
 func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 	fontFace := assetLibrary.FontFaces["oxanium"]
+	fontFaceHeight := fontFace.Metrics().Height.Ceil()
+	fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()
 
 	viewPortCenter := w.getSelectedShip().Position
 
@@ -277,6 +297,13 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 	text.Draw(screen, strconv.Itoa(w.score)+"/"+strconv.Itoa(10), fontFace, 4, 26, textColor)
 	text.Draw(screen, w.getSelectedShip().Position.String(), fontFace, 4, 54, textColor)
 	text.Draw(screen, loseOperationToDoomsdayClockTime(w.lose), fontFace, 4, 110, textColor)
+
+	if w.displayedPlanetName != "" {
+		largestPossibleBoundString := text.BoundString(fontFace, "Kepler 99999 jh")
+		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestPossibleBoundString.Dx())/2, screenHeight-fontFaceHeight, largestPossibleBoundString.Dx(), fontFaceHeight, ui.Left|ui.Top|ui.Right)
+		boundString := text.BoundString(fontFace, w.displayedPlanetName)
+		text.Draw(screen, w.displayedPlanetName, fontFace, (screenWidth-boundString.Dx())/2, screenHeight-fontFaceHeight+fontShift, textColor)
+	}
 }
 
 func loseOperationToDoomsdayClockTime(operation *Operation) string {

@@ -4,6 +4,7 @@ import "math"
 
 // Planet holds all information about a planet
 type Planet struct {
+	Name     string
 	Position Position
 	Looted   bool
 	Hue      float64
