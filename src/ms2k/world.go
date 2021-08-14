@@ -307,16 +307,11 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 }
 
 func loseOperationToDoomsdayClockTime(operation *Operation) string {
-	switch {
-	case operation.completedPercentage < 20:
-		return "23:55"
-	case operation.completedPercentage < 40:
-		return "23:56"
-	case operation.completedPercentage < 60:
-		return "23:57"
-	case operation.completedPercentage < 80:
-		return "23:58"
-	default:
-		return "23:59"
-	}
+	numberOfSeconds := 5 * 60
+	secondsPerPercent := numberOfSeconds / 100
+
+	minutes := 55 + int(float64(secondsPerPercent)*operation.completedPercentage)/60
+	seconds := int(float64(secondsPerPercent)*operation.completedPercentage) % 60
+
+	return "23:" + strconv.Itoa(minutes) + ":" + strconv.Itoa(seconds)
 }
