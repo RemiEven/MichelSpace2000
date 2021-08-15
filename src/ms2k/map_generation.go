@@ -21,14 +21,18 @@ func (w *World) ensureChunksAroundAreGenerated(p Position) {
 }
 
 func (w *World) generateChunk(x, y int) {
-	for i := 0; i < chunkSize; i++ {
-		for j := 0; j < chunkSize; j++ {
+	for i := 0; i < chunkSize; i += 4 {
+		for j := 0; j < chunkSize; j += 4 {
+			positionShiftNumber := float64(w.rng.GetValueAtPosition(-float32(i+x*chunkSize)*20, -float32(j+y*chunkSize)*20))
+			positionShiftX := int(positionShiftNumber * 4)
+			positionShiftY := int((positionShiftNumber*10 - 1) * 4)
+
 			if value := w.rng.GetValueAtPosition(float32(i+x*chunkSize), float32(j+y*chunkSize)); value >= 0.92 {
 				planet := &Planet{
 					Name: toPlanetName(value),
 					Position: Position{
-						X: cellSize*float64(i) + float64(x*cellSize*chunkSize),
-						Y: cellSize*float64(j) + float64(y*cellSize*chunkSize),
+						X: cellSize*float64(i+positionShiftX) + float64(x*cellSize*chunkSize),
+						Y: cellSize*float64(j+positionShiftY) + float64(y*cellSize*chunkSize),
 					},
 					Hue: float64(w.rng.GetValueAtPosition(-float32(i+x*chunkSize)/20, -float32(j+y*chunkSize)/20) * 2 * math.Pi),
 				}
@@ -41,8 +45,8 @@ func (w *World) generateChunk(x, y int) {
 			} else if value < 0.02 {
 				wormHole := &WormHole{
 					Position: Position{
-						X: cellSize*float64(i) + float64(x*cellSize*chunkSize),
-						Y: cellSize*float64(j) + float64(y*cellSize*chunkSize),
+						X: cellSize*float64(i+positionShiftX) + float64(x*cellSize*chunkSize),
+						Y: cellSize*float64(j+positionShiftY) + float64(y*cellSize*chunkSize),
 					},
 				}
 
