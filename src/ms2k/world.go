@@ -45,7 +45,11 @@ func NewWorld(rng *rng.RNG, timeNow time.Time) *World {
 		PlanetScans: map[*Planet]*Operation{},
 	}
 
-	planets := make([]*Planet, 0)
+	planets := make([]*Planet, 1)
+	planets[0] = &Planet{
+		Name:   "Earth",
+		Looted: true,
+	}
 
 	return &World{
 		Planets:         planets,
@@ -224,6 +228,9 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 	{
 		imageWidth, imageHeight := assetLibrary.Images["planet"].Size()
 		for _, planet := range w.Planets {
+			if planet == w.Planets[0] {
+				continue
+			}
 			if isInBox(planet.Position.X, planet.Position.Y, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {
 				dio := &ebiten.DrawImageOptions{}
 				scale := 0.25 * zoomFactor
