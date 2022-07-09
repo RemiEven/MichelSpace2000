@@ -6,4 +6,6 @@ type Ship struct {
 	Direction Direction
 
 	PlanetScans map[*Planet]*Operation
+
+	Radar *Radar
 }

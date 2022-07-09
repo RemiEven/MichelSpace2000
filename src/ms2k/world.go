@@ -130,6 +130,13 @@ func (w *World) Update(timeNow time.Time, settings *Settings) int8 {
 
 	w.ensureChunksAroundAreGenerated(selectedShip.Position)
 
+	if radar := selectedShip.Radar; radar != nil {
+		radar.Scan.Update(timeNow)
+		if radar.Scan.IsCompleted() {
+			selectedShip.Radar = nil
+		}
+	}
+
 	for _, ship := range w.Ships {
 		var closestPlanet *Planet
 		distanceToClosestPlanet := math.MaxFloat64
@@ -154,6 +161,16 @@ func (w *World) Update(timeNow time.Time, settings *Settings) int8 {
 				w.displayedPlanetName = closestPlanet.Name
 			} else {
 				w.displayedPlanetName = ""
+			}
+
+			if inpututil.IsKeyJustPressed(ebiten.KeyR) && ship.Radar == nil {
+				ship.Radar = &Radar{
+					Position: ship.Position,
+					Scan: Operation{
+						speed:      30,
+						lastUpdate: timeNow,
+					},
+				}
 			}
 		}
 
@@ -298,6 +315,21 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 				screen.DrawImage(assetLibrary.Images["ship"], dio)
 			}
 		}
+	}
+
+	if radar := w.getSelectedShip().Radar; radar != nil {
+		imageWidth, imageHeight := assetLibrary.Images["radar"].Size()
+		dio := &ebiten.DrawImageOptions{}
+		scale := 1.0 * zoomFactor
+
+		dio.ColorM.Scale(1, 1, 1, 1-(radar.Scan.completedPercentage/100)*(radar.Scan.completedPercentage/100))
+
+		dio.GeoM.Scale(scale, scale)
+		dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
+
+		translateToDrawPosition(radar.Position, viewPortCenter, &dio.GeoM, zoomFactor)
+
+		screen.DrawImage(assetLibrary.Images["radar"], dio)
 	}
 
 	ui.DrawBoxAround(screen, assetLibrary, 0, 0, 250, 120, ui.Bottom|ui.Right)

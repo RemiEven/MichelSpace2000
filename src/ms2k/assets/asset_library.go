@@ -46,14 +46,15 @@ func NewAssetLibrary() (*Library, error) {
 	}
 
 	for name, path := range map[string]string{
-		"ships":      "modular_ships.png",
-		"planet":     "Green Gas Planet.png",
 		"bg":         "back.png",
 		"earth":      "Earth.png",
 		"moon":       "RedMoon.png",
-		"wormHole":   "Hurricane.png",
+		"planet":     "Green Gas Planet.png",
+		"radar":      "Radar.png",
 		"satellite":  "Satellite.png",
+		"ships":      "modular_ships.png",
 		"ui/listbox": "ui/listbox_default.png",
+		"wormHole":   "Hurricane.png",
 	} {
 		if err := al.loadImage(path, name); err != nil {
 			return nil, err
