@@ -9,6 +9,7 @@ import (
 )
 
 func drawSpaceBackground(screen *ebiten.Image, assetLibrary *assets.Library, position Position) {
+	screenWidth, screenHeight := float64(screen.Bounds().Dx()), float64(screen.Bounds().Dy())
 	scale := 1.0
 
 	parallaxFactor := math.Pow(3.0, zoomFactor)

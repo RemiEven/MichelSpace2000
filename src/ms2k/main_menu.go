@@ -64,6 +64,8 @@ func (menu *MainMenu) Update() int8 {
 func (menu *MainMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 	drawSpaceBackground(screen, assetLibrary, Position{})
 
+	screenWidth := screen.Bounds().Dx()
+
 	fontFace := assetLibrary.FontFaces["oxanium"]
 	fontFaceHeight := fontFace.Metrics().Height.Ceil()
 	fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()

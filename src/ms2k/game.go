@@ -2,6 +2,7 @@ package ms2k
 
 import (
 	"fmt"
+	"image"
 	"image/color"
 	"log"
 	"time"
@@ -26,9 +27,6 @@ const (
 )
 
 const (
-	screenWidth  = 640 * 2
-	screenHeight = 400 * 2
-
 	viewportBorderMargin = 32 // should be equal or bigger than half the side length of the biggest sprite to avoid clipping
 )
 
@@ -125,6 +123,8 @@ var (
 
 // Draw is used to implement the ebiten.Game interface
 func (g *Game) Draw(screen *ebiten.Image) {
+	screenBounds := screen.Bounds()
+
 	switch g.state {
 	case stateInMenu:
 		g.menu.Draw(screen, g.assetLibrary)
@@ -143,8 +143,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		{
 			titleLabel := "Game Over"
 			boundString := text.BoundString(fontFace, titleLabel)
-			ui.DrawBoxAround(screen, g.assetLibrary, (screenWidth-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight, ui.AllBorders)
-			text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*11+fontShift, textColor)
+			ui.DrawBoxAround(screen, g.assetLibrary, (screenBounds.Dx()-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight, ui.AllBorders)
+			text.Draw(screen, titleLabel, fontFace, (screenBounds.Dx()-boundString.Dx())/2, fontFaceHeight*11+fontShift, textColor)
 		}
 	case stateWon:
 		g.World.Draw(screen, g.assetLibrary)
@@ -155,15 +155,16 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		{
 			titleLabel := "Victory"
 			boundString := text.BoundString(fontFace, titleLabel)
-			ui.DrawBoxAround(screen, g.assetLibrary, (screenWidth-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight, ui.AllBorders)
-			text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*11+fontShift, textColor)
+			ui.DrawBoxAround(screen, g.assetLibrary, (screenBounds.Dx()-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight, ui.AllBorders)
+			text.Draw(screen, titleLabel, fontFace, (screenBounds.Dx()-boundString.Dx())/2, fontFaceHeight*11+fontShift, textColor)
 		}
 	case stateInCredits:
 		g.creditScreen.Draw(screen, g.assetLibrary)
 	}
 }
 
-func translateToDrawPosition(gamePosition, viewPortCenter Position, geoM *ebiten.GeoM, zoomFactor float64) {
+func translateToDrawPosition(screenBounds *image.Rectangle, gamePosition, viewPortCenter Position, geoM *ebiten.GeoM, zoomFactor float64) {
+	screenWidth, screenHeight := float64(screenBounds.Dx()), float64(screenBounds.Dy())
 	geoM.Translate(-viewPortCenter.X*zoomFactor, -viewPortCenter.Y*zoomFactor)
 	geoM.Translate(screenWidth/2, screenHeight/2)
 	geoM.Translate(gamePosition.X*zoomFactor, gamePosition.Y*zoomFactor)
@@ -171,7 +172,7 @@ func translateToDrawPosition(gamePosition, viewPortCenter Position, geoM *ebiten
 
 // Layout is used to implement the ebiten.Game interface
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return screenWidth, screenHeight
+	return outsideWidth, outsideHeight
 }
 
 func isInBox(x, y, minX, maxX, minY, maxY float64) bool {

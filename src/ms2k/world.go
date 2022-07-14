@@ -204,6 +204,9 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 
 	drawSpaceBackground(screen, assetLibrary, viewPortCenter)
 
+	screenBounds := screen.Bounds()
+	screenWidth, screenHeight := float64(screenBounds.Dx()), float64(screenBounds.Dy())
+
 	minXToDisplay := viewPortCenter.X - (screenWidth/2/zoomFactor + viewportBorderMargin)
 	maxXToDisplay := viewPortCenter.X + (screenWidth/2/zoomFactor + viewportBorderMargin)
 	minYToDisplay := viewPortCenter.Y - (screenHeight/2/zoomFactor + viewportBorderMargin)
@@ -218,7 +221,7 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 				dio.GeoM.Scale(scale, scale)
 				dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
 
-				translateToDrawPosition(wormHole.Position, viewPortCenter, &dio.GeoM, zoomFactor)
+				translateToDrawPosition(&screenBounds, wormHole.Position, viewPortCenter, &dio.GeoM, zoomFactor)
 
 				screen.DrawImage(assetLibrary.Images["wormHole"], dio)
 			}
@@ -237,7 +240,7 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 				dio.GeoM.Scale(scale, scale)
 				dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
 
-				translateToDrawPosition(planet.Position, viewPortCenter, &dio.GeoM, zoomFactor)
+				translateToDrawPosition(&screenBounds, planet.Position, viewPortCenter, &dio.GeoM, zoomFactor)
 
 				dio.ColorM.ChangeHSV(planet.Hue, 1, 1)
 				screen.DrawImage(assetLibrary.Images["planet"], dio)
@@ -247,7 +250,7 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 					scale := zoomFactor
 					dio.GeoM.Scale(scale, scale)
 					dio.GeoM.Translate(-float64(moonImageWidth)/2.0*scale, -float64(moonImageHeight)/2.0*scale)
-					translateToDrawPosition(moon.Position, viewPortCenter, &dio.GeoM, zoomFactor)
+					translateToDrawPosition(&screenBounds, moon.Position, viewPortCenter, &dio.GeoM, zoomFactor)
 					screen.DrawImage(assetLibrary.Images["moon"], dio)
 				}
 				if planet.Looted {
@@ -262,7 +265,7 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 						X: planet.Position.X + math.Sqrt2*float64(distance/2),
 						Y: planet.Position.Y - math.Sqrt2*float64(distance/2),
 					}
-					translateToDrawPosition(position, viewPortCenter, &dio.GeoM, zoomFactor)
+					translateToDrawPosition(&screenBounds, position, viewPortCenter, &dio.GeoM, zoomFactor)
 					screen.DrawImage(assetLibrary.Images["satellite"], dio)
 				}
 			}
@@ -277,7 +280,7 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 			dio.GeoM.Scale(scale, scale)
 			dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
 
-			translateToDrawPosition(Position{}, viewPortCenter, &dio.GeoM, zoomFactor)
+			translateToDrawPosition(&screenBounds, Position{}, viewPortCenter, &dio.GeoM, zoomFactor)
 
 			screen.DrawImage(assetLibrary.Images["earth"], dio)
 		}
@@ -293,7 +296,7 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 				dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
 				dio.GeoM.Rotate(-2.0 * math.Pi / 8.0 * float64(ship.Direction))
 
-				translateToDrawPosition(ship.Position, viewPortCenter, &dio.GeoM, zoomFactor)
+				translateToDrawPosition(&screenBounds, ship.Position, viewPortCenter, &dio.GeoM, zoomFactor)
 
 				screen.DrawImage(assetLibrary.Images["ship"], dio)
 			}
@@ -307,9 +310,9 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 
 	if w.displayedPlanetName != "" {
 		largestPossibleBoundString := text.BoundString(fontFace, "Kepler 99999 jh")
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestPossibleBoundString.Dx())/2, screenHeight-fontFaceHeight, largestPossibleBoundString.Dx(), fontFaceHeight, ui.Left|ui.Top|ui.Right)
+		ui.DrawBoxAround(screen, assetLibrary, (int(screenWidth)-largestPossibleBoundString.Dx())/2, int(screenHeight)-fontFaceHeight, largestPossibleBoundString.Dx(), fontFaceHeight, ui.Left|ui.Top|ui.Right)
 		boundString := text.BoundString(fontFace, w.displayedPlanetName)
-		text.Draw(screen, w.displayedPlanetName, fontFace, (screenWidth-boundString.Dx())/2, screenHeight-fontFaceHeight+fontShift, textColor)
+		text.Draw(screen, w.displayedPlanetName, fontFace, (int(screenWidth)-boundString.Dx())/2, int(screenHeight)-fontFaceHeight+fontShift, textColor)
 	}
 }
 
