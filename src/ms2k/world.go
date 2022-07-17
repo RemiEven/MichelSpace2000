@@ -34,6 +34,7 @@ type World struct {
 
 	lose *Operation
 
+	bottomText          *ui.LongTricklingText
 	displayedPlanetName string
 }
 
@@ -60,13 +61,24 @@ func NewWorld(rng *rng.RNG, timeNow time.Time) *World {
 		lose: &Operation{
 			lastUpdate: timeNow,
 			speed:      4. / 5.,
+			paused:     true,
 		},
-		rng: rng,
+		rng:        rng,
+		bottomText: ui.NewLongTricklingText(intro, timeNow, 40*time.Millisecond),
 	}
 }
 
 // Update updates the world
 func (w *World) Update(timeNow time.Time, settings *Settings) int8 {
+	if w.bottomText != nil {
+		_, allShown := w.bottomText.Update(timeNow)
+		if allShown && (inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsKeyJustPressed(ebiten.KeyEnter)) {
+			w.bottomText = nil
+			w.lose.Resume(timeNow)
+		}
+		return stateInGame
+	}
+
 	if inpututil.IsKeyJustPressed(keyMapping.PreviousShip) {
 		w.selectPreviousShip()
 	}
@@ -309,7 +321,10 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 	text.Draw(screen, w.getSelectedShip().Position.String(), fontFace, 4, 54, textColor)
 	text.Draw(screen, loseOperationToDoomsdayClockTime(w.lose), fontFace, 4, 110, textColor)
 
-	if w.displayedPlanetName != "" {
+	switch {
+	case w.bottomText != nil:
+		w.bottomText.Draw(screen, assetLibrary, 40, int(screenHeight)-(128+2*6+2*6), int(screenWidth)-2*40, 128)
+	case w.displayedPlanetName != "":
 		largestPossibleBoundString := text.BoundString(fontFace, "Kepler 99999 jh")
 		ui.DrawBoxAround(screen, assetLibrary, (int(screenWidth)-largestPossibleBoundString.Dx())/2, int(screenHeight)-fontFaceHeight, largestPossibleBoundString.Dx(), fontFaceHeight, ui.Left|ui.Top|ui.Right)
 		boundString := text.BoundString(fontFace, w.displayedPlanetName)
