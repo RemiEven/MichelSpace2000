@@ -25,7 +25,8 @@ type Library struct {
 	Images        map[string]*ebiten.Image
 	ImagesCredits map[string]Credit
 
-	Sounds        map[string][]byte
+	MP3Sounds     map[string][]byte
+	WavSounds     map[string][]byte
 	SoundsCredits map[string]Credit
 
 	FontFaces        map[string]font.Face
@@ -38,7 +39,8 @@ func NewAssetLibrary() (*Library, error) {
 		Images:        map[string]*ebiten.Image{},
 		ImagesCredits: map[string]Credit{},
 
-		Sounds:        map[string][]byte{},
+		MP3Sounds:     map[string][]byte{},
+		WavSounds:     map[string][]byte{},
 		SoundsCredits: map[string]Credit{},
 
 		FontFaces:        map[string]font.Face{},
@@ -62,7 +64,7 @@ func NewAssetLibrary() (*Library, error) {
 
 	al.Images["ship"] = al.Images["ships"].SubImage(image.Rect(80, 320, 112, 352)).(*ebiten.Image)
 
-	if err := al.loadSound("Hardmoon_-_Deep_space.mp3", "music"); err != nil {
+	if err := al.loadMP3Sound("Hardmoon_-_Deep_space.mp3", "music"); err != nil {
 		return nil, err
 	}
 
@@ -95,13 +97,30 @@ func (al *Library) loadImage(path, name string) error {
 	return nil
 }
 
-func (al *Library) loadSound(path, name string) error {
+func (al *Library) loadMP3Sound(path, name string) error {
 	absolutePath := "files/audio/" + path
 	sound, err := assetFS.ReadFile(absolutePath)
 	if err != nil {
-		return fmt.Errorf("failed to load sound [%q]: %w", name, err)
+		return fmt.Errorf("failed to load mp3 sound [%q]: %w", name, err)
 	}
-	al.Sounds[name] = sound
+	al.MP3Sounds[name] = sound
+
+	credit, err := loadCredits(absolutePath)
+	if err != nil {
+		return fmt.Errorf("failed to load credit file for [%q]: %w", name, err)
+	}
+	al.SoundsCredits[name] = *credit
+
+	return nil
+}
+
+func (al *Library) loadWavSound(path, name string) error {
+	absolutePath := "files/audio/" + path
+	sound, err := assetFS.ReadFile(absolutePath)
+	if err != nil {
+		return fmt.Errorf("failed to load wav sound [%q]: %w", name, err)
+	}
+	al.WavSounds[name] = sound
 
 	credit, err := loadCredits(absolutePath)
 	if err != nil {

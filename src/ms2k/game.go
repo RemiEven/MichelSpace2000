@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 
@@ -38,6 +39,8 @@ var (
 type Game struct {
 	assetLibrary *assets.Library
 
+	audioContext *audio.Context
+
 	state int8
 
 	menu             *MainMenu
@@ -58,9 +61,9 @@ func (g *Game) Init() error {
 	}
 	g.assetLibrary = assetLibrary
 
-	audioContext := NewAudioContext()
+	g.audioContext = NewAudioContext()
 
-	if _, err := NewPlayer(audioContext, g.assetLibrary.Sounds["music"]); err != nil {
+	if err := PlaySound(g.audioContext, g.assetLibrary, "music"); err != nil {
 		return fmt.Errorf("failed to play music: %w", err)
 	}
 
