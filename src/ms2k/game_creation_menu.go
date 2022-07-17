@@ -8,6 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text"
 
 	"github.com/RemiEven/michelSpace2000/src/ms2k/assets"
+	"github.com/RemiEven/michelSpace2000/src/ms2k/audio"
 	"github.com/RemiEven/michelSpace2000/src/ms2k/rng"
 	"github.com/RemiEven/michelSpace2000/src/ms2k/ui"
 )
@@ -26,6 +27,7 @@ func (menu *GameCreationMenu) RandomizeSeed() {
 // Update updates the game creation menu
 func (menu *GameCreationMenu) Update() int8 {
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		audio.PlaySound("click")
 		return stateInGame
 	}
 	inputChars := ebiten.InputChars()

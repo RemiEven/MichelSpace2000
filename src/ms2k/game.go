@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 
 	"github.com/RemiEven/michelSpace2000/src/ms2k/assets"
+	"github.com/RemiEven/michelSpace2000/src/ms2k/audio"
 	"github.com/RemiEven/michelSpace2000/src/ms2k/rng"
 	"github.com/RemiEven/michelSpace2000/src/ms2k/ui"
 )
@@ -39,8 +39,6 @@ var (
 type Game struct {
 	assetLibrary *assets.Library
 
-	audioContext *audio.Context
-
 	state int8
 
 	menu             *MainMenu
@@ -61,11 +59,8 @@ func (g *Game) Init() error {
 	}
 	g.assetLibrary = assetLibrary
 
-	g.audioContext = NewAudioContext()
-
-	if err := PlaySound(g.audioContext, g.assetLibrary, "music"); err != nil {
-		return fmt.Errorf("failed to play music: %w", err)
-	}
+	audio.Init(assetLibrary)
+	audio.PlaySound("music")
 
 	g.state = stateInMenu
 	g.menu = &MainMenu{}

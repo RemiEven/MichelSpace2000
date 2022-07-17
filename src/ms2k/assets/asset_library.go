@@ -68,6 +68,13 @@ func NewAssetLibrary() (*Library, error) {
 		return nil, err
 	}
 
+	if err := al.loadWavSound("click.wav", "click"); err != nil {
+		return nil, err
+	}
+	if err := al.loadWavSound("click_2.wav", "click_2"); err != nil {
+		return nil, err
+	}
+
 	if err := al.loadFontFace("Oxanium-Regular.ttf", "oxanium"); err != nil {
 		return nil, err
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text"
 
 	"github.com/RemiEven/michelSpace2000/src/ms2k/assets"
+	"github.com/RemiEven/michelSpace2000/src/ms2k/audio"
 	"github.com/RemiEven/michelSpace2000/src/ms2k/ui"
 )
 
@@ -40,6 +41,7 @@ func (menu *MainMenu) state() int8 {
 // Update updates the MainMenu
 func (menu *MainMenu) Update() int8 {
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		audio.PlaySound("click")
 		switch menu.state() {
 		case menuStateNewGame:
 			return stateCreatingGame

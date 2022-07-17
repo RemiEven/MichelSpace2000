@@ -7,6 +7,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
 	"github.com/RemiEven/michelSpace2000/src/ms2k/assets"
+	"github.com/RemiEven/michelSpace2000/src/ms2k/audio"
 	"github.com/RemiEven/michelSpace2000/src/ms2k/ui"
 )
 
@@ -87,6 +88,7 @@ func (cs *CreditScreen) Update() int8 {
 		cs.currentScroll--
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		audio.PlaySound("click")
 		return stateInMenu
 	}
 	return stateInCredits

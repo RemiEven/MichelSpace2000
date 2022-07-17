@@ -1,4 +1,4 @@
-package ms2k
+package audio
 
 import (
 	"bytes"
@@ -17,14 +17,20 @@ const (
 	sampleRate = 44100
 )
 
-// NewAudioContext creates a new audio context which can then host sound players
-func NewAudioContext() *audio.Context {
-	return audio.NewContext(sampleRate)
+var (
+	audioContext *audio.Context
+
+	assetLibrary *assets.Library
+)
+
+func Init(assetLibraryToSet *assets.Library) {
+	audioContext = audio.NewContext(sampleRate)
+	assetLibrary = assetLibraryToSet
 }
 
 // NewMP3Player creates a new player for the given sound in the given audio context.
 // The caller is responsible of closing the player.
-func NewMP3Player(audioContext *audio.Context, sound []byte) (*audio.Player, error) {
+func NewMP3Player(sound []byte) (*audio.Player, error) {
 	audioStream, err := mp3.DecodeWithSampleRate(sampleRate, bytes.NewReader(sound))
 	if err != nil {
 		return nil, err
@@ -33,13 +39,14 @@ func NewMP3Player(audioContext *audio.Context, sound []byte) (*audio.Player, err
 	if err != nil {
 		return nil, err
 	}
+	player.SetVolume(0.35) // TODO: find a better way to adjust music volume
 	player.Play()
 	return player, nil
 }
 
 // NewWavPlayer creates a new player for the given sound in the fiven audio context.
 // The caller is responsible of closing the player.
-func NewWavPlayer(audioContext *audio.Context, sound []byte) (*audio.Player, error) {
+func NewWavPlayer(sound []byte) (*audio.Player, error) {
 	audioStream, err := wav.DecodeWithSampleRate(sampleRate, bytes.NewReader(sound))
 	if err != nil {
 		return nil, err
@@ -52,15 +59,21 @@ func NewWavPlayer(audioContext *audio.Context, sound []byte) (*audio.Player, err
 	return player, nil
 }
 
-func PlaySound(audioContext *audio.Context, assetLibrary *assets.Library, soundName string) error {
+func PlaySound(soundName string) {
+	if err := playSound(soundName); err != nil {
+		fmt.Println("failed to play sound [" + soundName + "]: " + err.Error())
+	}
+}
+
+func playSound(soundName string) error {
 	if mp3Sound, ok := assetLibrary.MP3Sounds[soundName]; ok {
-		player, err := NewMP3Player(audioContext, mp3Sound)
+		player, err := NewMP3Player(mp3Sound)
 		if err != nil {
 			return fmt.Errorf("failed to create MP3 player for sound [%v]: %w", soundName, err)
 		}
 		player.Play()
 	} else if wavSound, ok := assetLibrary.WavSounds[soundName]; ok {
-		player, err := NewWavPlayer(audioContext, wavSound)
+		player, err := NewWavPlayer(wavSound)
 		if err != nil {
 			return fmt.Errorf("failed to create wav player for sound [%v]: %w", soundName, err)
 		}
