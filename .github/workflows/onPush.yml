@@ -12,7 +12,7 @@ jobs:
         with:
           go-version: '1.18'
       - name: Install non-go dependencies
-        run: sudo apt-get install libgl1-mesa-dev xorg-dev libasound2-dev
+        run: sudo apt-get update && sudo apt-get install libgl1-mesa-dev xorg-dev libasound2-dev
       - name: Build linux executable
         run: go build -o michelSpace2000 .
       - name: Build windows executable
