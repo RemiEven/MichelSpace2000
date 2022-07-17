@@ -1,6 +1,7 @@
 package ms2k
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"time"
@@ -304,7 +305,7 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 	}
 
 	ui.DrawBoxAround(screen, assetLibrary, 0, 0, 250, 120, ui.Bottom|ui.Right)
-	text.Draw(screen, strconv.Itoa(w.score)+"/"+strconv.Itoa(10), fontFace, 4, 26, textColor)
+	text.Draw(screen, strconv.Itoa(w.score)+"/"+strconv.Itoa(10)+" worlds scanned", fontFace, 4, 26, textColor)
 	text.Draw(screen, w.getSelectedShip().Position.String(), fontFace, 4, 54, textColor)
 	text.Draw(screen, loseOperationToDoomsdayClockTime(w.lose), fontFace, 4, 110, textColor)
 
@@ -323,5 +324,9 @@ func loseOperationToDoomsdayClockTime(operation *Operation) string {
 	minutes := 55 + int(float64(secondsPerPercent)*operation.completedPercentage)/60
 	seconds := int(float64(secondsPerPercent)*operation.completedPercentage) % 60
 
-	return "23:" + strconv.Itoa(minutes) + ":" + strconv.Itoa(seconds)
+	if minutes == 60 {
+		return "Midnight"
+	}
+
+	return fmt.Sprintf("23:%02d:%02d", minutes, seconds)
 }
