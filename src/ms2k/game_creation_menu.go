@@ -18,6 +18,14 @@ const maxSeedLength = 8
 type GameCreationMenu struct {
 	RNG     []rune
 	counter int
+
+	assetLibrary *assets.Library
+}
+
+func NewGameCreationMenu(assetLibrary *assets.Library) *GameCreationMenu {
+	return &GameCreationMenu{
+		assetLibrary: assetLibrary,
+	}
 }
 
 func (menu *GameCreationMenu) RandomizeSeed() {
@@ -68,12 +76,12 @@ func (menu *GameCreationMenu) repeatingKeyPressed(key ebiten.Key) bool {
 }
 
 // Draw draws the game creation menu
-func (menu *GameCreationMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
-	drawSpaceBackground(screen, assetLibrary, Position{})
+func (menu *GameCreationMenu) Draw(screen *ebiten.Image) {
+	drawSpaceBackground(screen, menu.assetLibrary, Position{})
 
 	screenWidth := screen.Bounds().Dx()
 
-	fontFace := assetLibrary.FontFaces["oxanium"]
+	fontFace, _ := menu.assetLibrary.FontFaces.Load("oxanium")
 	fontFaceHeight := fontFace.Metrics().Height.Ceil()
 	fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()
 
@@ -83,8 +91,8 @@ func (menu *GameCreationMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Li
 	{
 		titleLabel := "Game creation"
 		boundString := text.BoundString(fontFace, titleLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*5, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
-		text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*5+fontShift, textColor)
+		ui.DrawBoxAround(screen, menu.assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*5, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
+		text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*5+fontShift, ui.TextColor)
 	}
 
 	{
@@ -94,7 +102,7 @@ func (menu *GameCreationMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Li
 			rngSeedLabel += "_"
 		}
 		boundString := text.BoundString(fontFace, baseRNGSeedLabel+strings.Repeat("w", maxSeedLength))
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*9, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
-		text.Draw(screen, rngSeedLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*9+fontShift, textColor)
+		ui.DrawBoxAround(screen, menu.assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*9, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
+		text.Draw(screen, rngSeedLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*9+fontShift, ui.TextColor)
 	}
 }

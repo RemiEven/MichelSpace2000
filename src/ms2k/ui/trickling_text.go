@@ -24,13 +24,16 @@ type TricklingText struct {
 	showAll             bool
 
 	addedRunes bool
+
+	assetLibrary *assets.Library
 }
 
-func NewTricklingText(text string, timeNow time.Time, frequency time.Duration) *TricklingText {
+func NewTricklingText(text string, timeNow time.Time, frequency time.Duration, assetLibrary *assets.Library) *TricklingText {
 	return &TricklingText{
-		text:      text,
-		start:     timeNow,
-		frequency: frequency,
+		text:         text,
+		start:        timeNow,
+		frequency:    frequency,
+		assetLibrary: assetLibrary,
 	}
 }
 
@@ -51,9 +54,9 @@ func (tt *TricklingText) Update(timeNow time.Time) (addedRune, allShown bool) {
 	return false, tt.allShown()
 }
 
-func (tt *TricklingText) Draw(screen *ebiten.Image, assetLibrary *assets.Library, x, y, width, height int) {
+func (tt *TricklingText) Draw(screen *ebiten.Image, x, y, width, height int) {
 	if tt.lines == nil || tt.width != width || tt.height != height {
-		tt.lines, _ = SplitWallOfText(assetLibrary, width, height, []string{tt.text})
+		tt.lines, _ = SplitWallOfText(tt.assetLibrary, width, height, []string{tt.text})
 		tt.trickledLines = make([]string, len(tt.lines))
 		tt.width, tt.height = width, height
 	}
@@ -77,8 +80,8 @@ func (tt *TricklingText) Draw(screen *ebiten.Image, assetLibrary *assets.Library
 		}
 	}
 
-	DrawBoxAround(screen, assetLibrary, x, y, width, height, AllBorders)
-	DrawWallOfText(screen, assetLibrary, x, y, tt.trickledLines, 0, len(tt.trickledLines))
+	DrawBoxAround(screen, tt.assetLibrary, x, y, width, height, AllBorders)
+	DrawWallOfText(screen, tt.assetLibrary, x, y, tt.trickledLines, 0, len(tt.trickledLines))
 }
 
 func (tt *TricklingText) allShown() bool {

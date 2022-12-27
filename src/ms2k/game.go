@@ -3,11 +3,11 @@ package ms2k
 import (
 	"fmt"
 	"image"
-	"image/color"
 	"log"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 
@@ -25,6 +25,8 @@ const (
 	stateWon
 	stateLost
 	stateInCredits
+	stateLoadingAssets
+	stateLoadingAssetsError
 )
 
 const (
@@ -37,7 +39,10 @@ var (
 
 // Game contains all loaded game assets with current game data
 type Game struct {
-	assetLibrary *assets.Library
+	assetLibraryReadyChan <-chan *assets.Library
+	assetLibraryErrChan   <-chan error
+	assetLibrary          *assets.Library
+	loadingAssetErr       error
 
 	state int8
 
@@ -53,23 +58,8 @@ type Game struct {
 
 // Init initializes a game
 func (g *Game) Init() error {
-	assetLibrary, err := assets.NewAssetLibrary()
-	if err != nil {
-		return fmt.Errorf("failed to load asset library: %w", err)
-	}
-	g.assetLibrary = assetLibrary
-
-	audio.Init(assetLibrary)
-	audio.PlaySound("music")
-
-	g.state = stateInMenu
-	g.menu = &MainMenu{}
-	g.gameCreationMenu = &GameCreationMenu{}
-	g.settings = &Settings{
-		keyboardLayout: keyboardLayoutQwerty,
-	}
-	g.creditScreen = NewCreditScreen(assetLibrary)
-
+	g.assetLibraryReadyChan, g.assetLibraryErrChan = assets.NewAssetLibrary()
+	g.state = stateLoadingAssets
 	return nil
 }
 
@@ -79,6 +69,25 @@ func (g *Game) Update() error {
 
 	nextState := g.state
 	switch g.state {
+	case stateLoadingAssets:
+		select {
+		case err := <-g.assetLibraryErrChan:
+			g.loadingAssetErr = fmt.Errorf("failed to load asset library: %w", err)
+			nextState = stateLoadingAssetsError
+		case al := <-g.assetLibraryReadyChan:
+			g.assetLibrary = al
+
+			audio.Init(g.assetLibrary)
+			audio.PlaySound("music")
+
+			g.menu = NewMainMenu(g.assetLibrary, allowExit)
+			g.gameCreationMenu = NewGameCreationMenu(g.assetLibrary)
+			g.settings = NewSettings(g.assetLibrary)
+			g.creditScreen = NewCreditScreen(g.assetLibrary)
+			nextState = stateInMenu
+		default:
+			// do nothing and check again next frame
+		}
 	case stateInMenu:
 		nextState = g.menu.Update()
 		if nextState == stateCreatingGame {
@@ -92,7 +101,7 @@ func (g *Game) Update() error {
 			if err != nil {
 				log.Fatal(fmt.Errorf("failed to initialize rng: %w", err))
 			}
-			g.World = NewWorld(rng, timeNow)
+			g.World = NewWorld(rng, timeNow, g.assetLibrary)
 		}
 	case stateInSettings:
 		nextState = g.settings.Update()
@@ -101,7 +110,7 @@ func (g *Game) Update() error {
 	case stateLost, stateWon:
 		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 			nextState = stateInMenu
-			g.menu.selectedIndex = menuStateNewGame
+			g.menu.Reset()
 		}
 	case stateInCredits:
 		nextState = g.creditScreen.Update()
@@ -111,30 +120,26 @@ func (g *Game) Update() error {
 	return nil
 }
 
-var (
-	white     = color.White
-	lightBlue = color.RGBA{R: 0xaa, G: 0xaa, B: 0xff, A: 0xff}
-
-	textColor         = white
-	selectedTextColor = lightBlue
-)
-
 // Draw is used to implement the ebiten.Game interface
 func (g *Game) Draw(screen *ebiten.Image) {
 	screenBounds := screen.Bounds()
 
 	switch g.state {
+	case stateLoadingAssets:
+		ebitenutil.DebugPrint(screen, "Loading assets, please wait...")
+	case stateLoadingAssetsError:
+		ebitenutil.DebugPrint(screen, g.loadingAssetErr.Error())
 	case stateInMenu:
-		g.menu.Draw(screen, g.assetLibrary)
+		g.menu.Draw(screen)
 	case stateInSettings:
-		g.settings.Draw(screen, g.assetLibrary)
+		g.settings.Draw(screen)
 	case stateCreatingGame:
-		g.gameCreationMenu.Draw(screen, g.assetLibrary)
+		g.gameCreationMenu.Draw(screen)
 	case stateInGame:
-		g.World.Draw(screen, g.assetLibrary)
+		g.World.Draw(screen)
 	case stateLost:
-		g.World.Draw(screen, g.assetLibrary)
-		fontFace := g.assetLibrary.FontFaces["oxanium"]
+		g.World.Draw(screen)
+		fontFace, _ := g.assetLibrary.FontFaces.Load("oxanium")
 		fontFaceHeight := fontFace.Metrics().Height.Ceil()
 		fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()
 
@@ -142,11 +147,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			titleLabel := "Game Over"
 			boundString := text.BoundString(fontFace, titleLabel)
 			ui.DrawBoxAround(screen, g.assetLibrary, (screenBounds.Dx()-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight, ui.AllBorders)
-			text.Draw(screen, titleLabel, fontFace, (screenBounds.Dx()-boundString.Dx())/2, fontFaceHeight*11+fontShift, textColor)
+			text.Draw(screen, titleLabel, fontFace, (screenBounds.Dx()-boundString.Dx())/2, fontFaceHeight*11+fontShift, ui.TextColor)
 		}
 	case stateWon:
-		g.World.Draw(screen, g.assetLibrary)
-		fontFace := g.assetLibrary.FontFaces["oxanium"]
+		g.World.Draw(screen)
+		fontFace, _ := g.assetLibrary.FontFaces.Load("oxanium")
 		fontFaceHeight := fontFace.Metrics().Height.Ceil()
 		fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()
 
@@ -154,10 +159,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			titleLabel := "Victory"
 			boundString := text.BoundString(fontFace, titleLabel)
 			ui.DrawBoxAround(screen, g.assetLibrary, (screenBounds.Dx()-boundString.Dx())/2, fontFaceHeight*11, boundString.Dx(), fontFaceHeight, ui.AllBorders)
-			text.Draw(screen, titleLabel, fontFace, (screenBounds.Dx()-boundString.Dx())/2, fontFaceHeight*11+fontShift, textColor)
+			text.Draw(screen, titleLabel, fontFace, (screenBounds.Dx()-boundString.Dx())/2, fontFaceHeight*11+fontShift, ui.TextColor)
 		}
 	case stateInCredits:
-		g.creditScreen.Draw(screen, g.assetLibrary)
+		g.creditScreen.Draw(screen)
 	}
 }
 

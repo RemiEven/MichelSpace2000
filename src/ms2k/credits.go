@@ -16,6 +16,8 @@ type CreditScreen struct {
 	lines         []string
 	maxScroll     int
 	currentScroll int
+
+	assetLibrary *assets.Library
 }
 
 func NewCreditScreen(assetLibrary *assets.Library) *CreditScreen {
@@ -28,29 +30,29 @@ func NewCreditScreen(assetLibrary *assets.Library) *CreditScreen {
 		paragraphs = append(paragraphs, paragraph)
 	}
 
-	for name, credit := range assetLibrary.ImagesCredits {
+	assetLibrary.ImagesCredits.Range(func(name string, credit assets.Credit) {
 		addParagraph("- " + name)
 		addParagraph(pseudoTab + "by " + strings.Join(credit.Authors, ", ") + ", used under license " + credit.License)
 		addParagraph(pseudoTab + credit.Source)
-	}
+	})
 
 	addParagraph("")
 	addParagraph(pseudoTab + pseudoTab + "Fonts")
 
-	for name, credit := range assetLibrary.FontFacesCredits {
+	assetLibrary.FontFacesCredits.Range(func(name string, credit assets.Credit) {
 		addParagraph("- " + name)
 		addParagraph(pseudoTab + "by " + strings.Join(credit.Authors, ", ") + ", used under license " + credit.License)
 		addParagraph(pseudoTab + credit.Source)
-	}
+	})
 
 	addParagraph("")
 	addParagraph(pseudoTab + pseudoTab + "Music and sounds")
 
-	for name, credit := range assetLibrary.SoundsCredits {
+	assetLibrary.SoundsCredits.Range(func(name string, credit assets.Credit) {
 		addParagraph("- " + name)
 		addParagraph(pseudoTab + "by " + strings.Join(credit.Authors, ", ") + ", used under license " + credit.License)
 		addParagraph(pseudoTab + credit.Source)
-	}
+	})
 
 	addParagraph("")
 	addParagraph(pseudoTab + pseudoTab + "Programming libraries")
@@ -74,8 +76,9 @@ func NewCreditScreen(assetLibrary *assets.Library) *CreditScreen {
 	lines, maxScroll := ui.SplitWallOfText(assetLibrary, 880, 640, paragraphs)
 
 	return &CreditScreen{
-		lines:     lines,
-		maxScroll: maxScroll,
+		lines:        lines,
+		maxScroll:    maxScroll,
+		assetLibrary: assetLibrary,
 	}
 }
 
@@ -109,10 +112,10 @@ func (cs *CreditScreen) repeatingKeyPressed(key ebiten.Key) bool {
 	return false
 }
 
-func (cs *CreditScreen) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
-	drawSpaceBackground(screen, assetLibrary, Position{})
+func (cs *CreditScreen) Draw(screen *ebiten.Image) {
+	drawSpaceBackground(screen, cs.assetLibrary, Position{})
 
-	ui.DrawBoxAround(screen, assetLibrary, 200, 80, 880, 640, ui.AllBorders)
+	ui.DrawBoxAround(screen, cs.assetLibrary, 200, 80, 880, 640, ui.AllBorders)
 
-	ui.DrawWallOfText(screen, assetLibrary, 200, 80, cs.lines, cs.currentScroll, len(cs.lines)-cs.maxScroll)
+	ui.DrawWallOfText(screen, cs.assetLibrary, 200, 80, cs.lines, cs.currentScroll, len(cs.lines)-cs.maxScroll)
 }

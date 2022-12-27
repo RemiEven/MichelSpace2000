@@ -36,10 +36,12 @@ type World struct {
 
 	bottomText          *ui.LongTricklingText
 	displayedPlanetName string
+
+	assetLibrary *assets.Library
 }
 
 // NewWorld creates a new world
-func NewWorld(rng *rng.RNG, timeNow time.Time) *World {
+func NewWorld(rng *rng.RNG, timeNow time.Time, assetLibrary *assets.Library) *World {
 	ship1 := &Ship{
 		PlanetScans: map[*Planet]*Operation{},
 	}
@@ -63,8 +65,9 @@ func NewWorld(rng *rng.RNG, timeNow time.Time) *World {
 			speed:      4. / 5.,
 			paused:     true,
 		},
-		rng:        rng,
-		bottomText: ui.NewLongTricklingText(intro, timeNow, 40*time.Millisecond),
+		rng:          rng,
+		assetLibrary: assetLibrary,
+		bottomText:   ui.NewLongTricklingText(intro, timeNow, 40*time.Millisecond, assetLibrary),
 	}
 }
 
@@ -208,14 +211,14 @@ func (w *World) selectPreviousShip() {
 }
 
 // Draw draws the world
-func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
-	fontFace := assetLibrary.FontFaces["oxanium"]
+func (w *World) Draw(screen *ebiten.Image) {
+	fontFace, _ := w.assetLibrary.FontFaces.Load("oxanium")
 	fontFaceHeight := fontFace.Metrics().Height.Ceil()
 	fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()
 
 	viewPortCenter := w.getSelectedShip().Position
 
-	drawSpaceBackground(screen, assetLibrary, viewPortCenter)
+	drawSpaceBackground(screen, w.assetLibrary, viewPortCenter)
 
 	screenBounds := screen.Bounds()
 	screenWidth, screenHeight := float64(screenBounds.Dx()), float64(screenBounds.Dy())
@@ -226,7 +229,8 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 	maxYToDisplay := viewPortCenter.Y + (screenHeight/2/zoomFactor + viewportBorderMargin)
 
 	{
-		imageWidth, imageHeight := assetLibrary.Images["wormHole"].Size()
+		wormHoleImage, _ := w.assetLibrary.Images.Load("wormHole")
+		imageWidth, imageHeight := wormHoleImage.Size()
 		for _, wormHole := range w.WormHoles {
 			if isInBox(wormHole.Position.X, wormHole.Position.Y, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {
 				dio := &ebiten.DrawImageOptions{}
@@ -236,13 +240,16 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 
 				translateToDrawPosition(&screenBounds, wormHole.Position, viewPortCenter, &dio.GeoM, zoomFactor)
 
-				screen.DrawImage(assetLibrary.Images["wormHole"], dio)
+				screen.DrawImage(wormHoleImage, dio)
 			}
 		}
 	}
 
 	{
-		imageWidth, imageHeight := assetLibrary.Images["planet"].Size()
+		planetImage, _ := w.assetLibrary.Images.Load("planet")
+		moonImage, _ := w.assetLibrary.Images.Load("moon")
+		satelliteImage, _ := w.assetLibrary.Images.Load("satellite")
+		imageWidth, imageHeight := planetImage.Size()
 		for _, planet := range w.Planets {
 			if planet == w.Planets[0] {
 				continue
@@ -256,18 +263,18 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 				translateToDrawPosition(&screenBounds, planet.Position, viewPortCenter, &dio.GeoM, zoomFactor)
 
 				dio.ColorM.ChangeHSV(planet.Hue, 1, 1)
-				screen.DrawImage(assetLibrary.Images["planet"], dio)
-				moonImageWidth, moonImageHeight := assetLibrary.Images["moon"].Size()
+				screen.DrawImage(planetImage, dio)
+				moonImageWidth, moonImageHeight := moonImage.Size()
 				for _, moon := range planet.Moons {
 					dio := &ebiten.DrawImageOptions{}
 					scale := zoomFactor
 					dio.GeoM.Scale(scale, scale)
 					dio.GeoM.Translate(-float64(moonImageWidth)/2.0*scale, -float64(moonImageHeight)/2.0*scale)
 					translateToDrawPosition(&screenBounds, moon.Position, viewPortCenter, &dio.GeoM, zoomFactor)
-					screen.DrawImage(assetLibrary.Images["moon"], dio)
+					screen.DrawImage(moonImage, dio)
 				}
 				if planet.Looted {
-					satelliteImageWidth, satelliteImageHeight := assetLibrary.Images["satellite"].Size()
+					satelliteImageWidth, satelliteImageHeight := satelliteImage.Size()
 					dio := &ebiten.DrawImageOptions{}
 					scale := zoomFactor
 					dio.GeoM.Scale(scale, scale)
@@ -279,14 +286,15 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 						Y: planet.Position.Y - math.Sqrt2*float64(distance/2),
 					}
 					translateToDrawPosition(&screenBounds, position, viewPortCenter, &dio.GeoM, zoomFactor)
-					screen.DrawImage(assetLibrary.Images["satellite"], dio)
+					screen.DrawImage(satelliteImage, dio)
 				}
 			}
 		}
 	}
 
 	{
-		imageWidth, imageHeight := assetLibrary.Images["earth"].Size()
+		earthImage, _ := w.assetLibrary.Images.Load("earth")
+		imageWidth, imageHeight := earthImage.Size()
 		if isInBox(0, 0, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {
 			dio := &ebiten.DrawImageOptions{}
 			scale := 2.0 * zoomFactor
@@ -295,12 +303,13 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 
 			translateToDrawPosition(&screenBounds, Position{}, viewPortCenter, &dio.GeoM, zoomFactor)
 
-			screen.DrawImage(assetLibrary.Images["earth"], dio)
+			screen.DrawImage(earthImage, dio)
 		}
 	}
 
 	{
-		imageWidth, imageHeight := assetLibrary.Images["ship"].Size()
+		shipImage, _ := w.assetLibrary.Images.Load("ship")
+		imageWidth, imageHeight := shipImage.Size()
 		for _, ship := range w.Ships {
 			if isInBox(ship.Position.X, ship.Position.Y, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {
 				dio := &ebiten.DrawImageOptions{}
@@ -311,24 +320,24 @@ func (w *World) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 
 				translateToDrawPosition(&screenBounds, ship.Position, viewPortCenter, &dio.GeoM, zoomFactor)
 
-				screen.DrawImage(assetLibrary.Images["ship"], dio)
+				screen.DrawImage(shipImage, dio)
 			}
 		}
 	}
 
-	ui.DrawBoxAround(screen, assetLibrary, 0, 0, 250, 120, ui.Bottom|ui.Right)
-	text.Draw(screen, strconv.Itoa(w.score)+"/"+strconv.Itoa(10)+" worlds scanned", fontFace, 4, 26, textColor)
-	text.Draw(screen, w.getSelectedShip().Position.String(), fontFace, 4, 54, textColor)
-	text.Draw(screen, loseOperationToDoomsdayClockTime(w.lose), fontFace, 4, 110, textColor)
+	ui.DrawBoxAround(screen, w.assetLibrary, 0, 0, 250, 120, ui.Bottom|ui.Right)
+	text.Draw(screen, strconv.Itoa(w.score)+"/"+strconv.Itoa(10)+" worlds scanned", fontFace, 4, 26, ui.TextColor)
+	text.Draw(screen, w.getSelectedShip().Position.String(), fontFace, 4, 54, ui.TextColor)
+	text.Draw(screen, loseOperationToDoomsdayClockTime(w.lose), fontFace, 4, 110, ui.TextColor)
 
 	switch {
 	case w.bottomText != nil:
-		w.bottomText.Draw(screen, assetLibrary, 40, int(screenHeight)-(128+2*6+2*6), int(screenWidth)-2*40, 128)
+		w.bottomText.Draw(screen, 40, int(screenHeight)-(128+2*6+2*6), int(screenWidth)-2*40, 128)
 	case w.displayedPlanetName != "":
 		largestPossibleBoundString := text.BoundString(fontFace, "Kepler 99999 jh")
-		ui.DrawBoxAround(screen, assetLibrary, (int(screenWidth)-largestPossibleBoundString.Dx())/2, int(screenHeight)-fontFaceHeight, largestPossibleBoundString.Dx(), fontFaceHeight, ui.Left|ui.Top|ui.Right)
+		ui.DrawBoxAround(screen, w.assetLibrary, (int(screenWidth)-largestPossibleBoundString.Dx())/2, int(screenHeight)-fontFaceHeight, largestPossibleBoundString.Dx(), fontFaceHeight, ui.Left|ui.Top|ui.Right)
 		boundString := text.BoundString(fontFace, w.displayedPlanetName)
-		text.Draw(screen, w.displayedPlanetName, fontFace, (int(screenWidth)-boundString.Dx())/2, int(screenHeight)-fontFaceHeight+fontShift, textColor)
+		text.Draw(screen, w.displayedPlanetName, fontFace, (int(screenWidth)-boundString.Dx())/2, int(screenHeight)-fontFaceHeight+fontShift, ui.TextColor)
 	}
 }
 

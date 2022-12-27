@@ -20,22 +20,35 @@ const (
 	menuStateExit
 )
 
-var (
-	menuStates    = []int8{menuStateNewGame, menuStateSettings, menuStateCredits, menuStateExit}
-	lenMenuStates = len(menuStates)
-)
-
 // MainMenu is the main menu of the game
 type MainMenu struct {
+	states        []int8
 	selectedIndex int
+
+	assetLibrary *assets.Library
+}
+
+func NewMainMenu(assetLibrary *assets.Library, allowExit bool) *MainMenu {
+	states := []int8{menuStateNewGame, menuStateSettings, menuStateCredits, menuStateExit}
+	if !allowExit {
+		states = states[0:3]
+	}
+	return &MainMenu{
+		states:       states,
+		assetLibrary: assetLibrary,
+	}
 }
 
 func (menu *MainMenu) state() int8 {
-	index := menu.selectedIndex % lenMenuStates
+	index := menu.selectedIndex % len(menu.states)
 	if index < 0 {
-		index += lenMenuStates
+		index += len(menu.states)
 	}
-	return menuStates[index]
+	return menu.states[index]
+}
+
+func (menu *MainMenu) Reset() {
+	menu.selectedIndex = menuStateNewGame
 }
 
 // Update updates the MainMenu
@@ -63,12 +76,12 @@ func (menu *MainMenu) Update() int8 {
 }
 
 // Draw draws the MainMenu
-func (menu *MainMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
-	drawSpaceBackground(screen, assetLibrary, Position{})
+func (menu *MainMenu) Draw(screen *ebiten.Image) {
+	drawSpaceBackground(screen, menu.assetLibrary, Position{})
 
 	screenWidth := screen.Bounds().Dx()
 
-	fontFace := assetLibrary.FontFaces["oxanium"]
+	fontFace, _ := menu.assetLibrary.FontFaces.Load("oxanium")
 	fontFaceHeight := fontFace.Metrics().Height.Ceil()
 	fontShift := (fontFace.Metrics().Ascent + (fontFace.Metrics().Height-fontFace.Metrics().Ascent-fontFace.Metrics().Descent)/2).Ceil()
 
@@ -78,39 +91,39 @@ func (menu *MainMenu) Draw(screen *ebiten.Image, assetLibrary *assets.Library) {
 	{
 		titleLabel := "MichelSpace2000"
 		boundString := text.BoundString(fontFace, titleLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*5, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
-		text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*5+fontShift, textColor)
+		ui.DrawBoxAround(screen, menu.assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*5, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
+		text.Draw(screen, titleLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*5+fontShift, ui.TextColor)
 	}
 
 	color := func(menuOption int8) color.Color {
 		if menuOption == menu.state() {
-			return selectedTextColor
+			return ui.SelectedTextColor
 		}
-		return textColor
+		return ui.TextColor
 	}
 
 	{
 		newGameLabel := "New game"
 		boundString := text.BoundString(fontFace, newGameLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*9, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
+		ui.DrawBoxAround(screen, menu.assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*9, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
 		text.Draw(screen, newGameLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*9+fontShift, color(menuStateNewGame))
 	}
 	{
 		settingsLabel := "Controls"
 		boundString := text.BoundString(fontFace, settingsLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*11, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
+		ui.DrawBoxAround(screen, menu.assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*11, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
 		text.Draw(screen, settingsLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*11+fontShift, color(menuStateSettings))
 	}
 	{
 		creditsLabel := "Credits"
 		boundString := text.BoundString(fontFace, creditsLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*13, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
+		ui.DrawBoxAround(screen, menu.assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*13, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
 		text.Draw(screen, creditsLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*13+fontShift, color(menuStateCredits))
 	}
-	{
+	if len(menu.states) == 4 {
 		exitLabel := "Exit"
 		boundString := text.BoundString(fontFace, exitLabel)
-		ui.DrawBoxAround(screen, assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*15, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
+		ui.DrawBoxAround(screen, menu.assetLibrary, (screenWidth-largestBoundString.Dx())/2, fontFaceHeight*15, largestBoundString.Dx(), fontFaceHeight, ui.AllBorders)
 		text.Draw(screen, exitLabel, fontFace, (screenWidth-boundString.Dx())/2, fontFaceHeight*15+fontShift, color(menuStateExit))
 	}
 }

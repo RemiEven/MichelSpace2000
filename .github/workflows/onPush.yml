@@ -1,34 +1,63 @@
 name: on-push
 on: [push]
+
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: '1.18'
+          go-version: '1.19'
       - name: Install non-go dependencies
-        run: sudo apt-get update && sudo apt-get install libgl1-mesa-dev xorg-dev libasound2-dev
+        run: sudo apt-get update && sudo apt-get install libgl1-mesa-dev xorg-dev libasound2-dev zip
+      - name: Run unit tests
+        run: go test ./...
+      - name: Install butler
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          chmod +x butler
+          ./butler -V
       - name: Build linux executable
-        run: go build -o michelSpace2000 .
+        run: go build -o ms2k .
       - name: Build windows executable
         env:
           GOOS: windows
           GOARCH: amd64
-        run: go build -o michelSpace2000.exe .
-      - name: Release
+        run: go build -o ms2k.exe .
+      - name: Extract assets to dedicated folder
+        run: |
+          ./web/extract_assets.sh
+          rm ./web/extract_assets.sh
+          cp $(go env GOROOT)/misc/wasm/wasm_exec.js web/
+      - name: Build wasm executable
+        env: 
+          GOOS: js
+          GOARCH: wasm 
+        run: go build -o web/ms2k.wasm .
+      - name: Zip web folder
+        if: startsWith(github.ref, 'refs/tags/')
+        run: zip -r ms2k_wasm.zip web
+      - name: Release on github
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            michelSpace2000.exe
-            michelSpace2000
-          prerelease: true
-          draft: true
-          name: test
+            ms2k.exe
+            ms2k
+            ms2k_wasm.zip
+          name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release on itch.io
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          ./butler push web remieven/test-ms2k:web --userversion ${{ github.ref_name }} --if-changed
+          ./butler push ms2k remieven/test-ms2k:linux --userversion ${{ github.ref_name }} --if-changed
+          ./butler push ms2k.exe remieven/test-ms2k:windows --userversion ${{ github.ref_name }} --if-changed

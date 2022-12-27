@@ -66,13 +66,13 @@ func PlaySound(soundName string) {
 }
 
 func playSound(soundName string) error {
-	if mp3Sound, ok := assetLibrary.MP3Sounds[soundName]; ok {
+	if mp3Sound, ok := assetLibrary.MP3Sounds.Load(soundName); ok {
 		player, err := NewMP3Player(mp3Sound)
 		if err != nil {
 			return fmt.Errorf("failed to create MP3 player for sound [%v]: %w", soundName, err)
 		}
 		player.Play()
-	} else if wavSound, ok := assetLibrary.WavSounds[soundName]; ok {
+	} else if wavSound, ok := assetLibrary.WavSounds.Load(soundName); ok {
 		player, err := NewWavPlayer(wavSound)
 		if err != nil {
 			return fmt.Errorf("failed to create wav player for sound [%v]: %w", soundName, err)

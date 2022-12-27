@@ -2,7 +2,6 @@ package ui
 
 import (
 	"image"
-	"image/color"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -21,8 +20,6 @@ const (
 	AllBorders = Left | Right | Top | Bottom
 	NoBorder   = BorderOption(0)
 )
-
-var boxBgColor = color.RGBA{R: 0x94, G: 0xa9, B: 0xaa, A: 0xff}
 
 func DrawBoxAround(screen *ebiten.Image, assetLibrary *assets.Library, x, y, width, height int, borderOption BorderOption) {
 	if int(width)%2 == 1 {
@@ -45,9 +42,9 @@ func DrawBoxAround(screen *ebiten.Image, assetLibrary *assets.Library, x, y, wid
 		int(width/scale)+numberOfTrues(drawLeftBorder, drawRightBorder)*horizontalBorderHeightPx,
 		int(height/scale)+numberOfTrues(drawTopBorder, drawBottomBorder)*horizontalBorderHeightPx,
 	)
-	ebitenutil.DrawRect(intermediaryImage, float64(numberOfTrues(drawLeftBorder)*horizontalBorderHeightPx), float64(numberOfTrues(drawTopBorder)*horizontalBorderHeightPx), float64(width/scale), float64(height/scale), boxBgColor)
+	ebitenutil.DrawRect(intermediaryImage, float64(numberOfTrues(drawLeftBorder)*horizontalBorderHeightPx), float64(numberOfTrues(drawTopBorder)*horizontalBorderHeightPx), float64(width/scale), float64(height/scale), BoxBgColor)
 
-	baseImage := assetLibrary.Images["ui/listbox"]
+	baseImage, _ := assetLibrary.Images.Load("ui/listbox")
 	baseImageWidth, baseImageHeight := baseImage.Size()
 
 	var (

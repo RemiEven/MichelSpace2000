@@ -14,14 +14,17 @@ type LongTricklingText struct {
 	displayedTextIndex int
 	frequency          time.Duration
 
+	assetLibrary *assets.Library
+
 	tt *TricklingText
 }
 
-func NewLongTricklingText(texts []string, timeNow time.Time, frequency time.Duration) *LongTricklingText {
+func NewLongTricklingText(texts []string, timeNow time.Time, frequency time.Duration, assetLibrary *assets.Library) *LongTricklingText {
 	return &LongTricklingText{
-		texts:     texts,
-		tt:        NewTricklingText(texts[0], timeNow, frequency),
-		frequency: frequency,
+		texts:        texts,
+		tt:           NewTricklingText(texts[0], timeNow, frequency, assetLibrary),
+		frequency:    frequency,
+		assetLibrary: assetLibrary,
 	}
 }
 
@@ -35,12 +38,12 @@ func (ltt *LongTricklingText) Update(timeNow time.Time) (addedRune, allShown boo
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		ltt.displayedTextIndex++
-		ltt.tt = NewTricklingText(ltt.texts[ltt.displayedTextIndex], timeNow, ltt.frequency)
+		ltt.tt = NewTricklingText(ltt.texts[ltt.displayedTextIndex], timeNow, ltt.frequency, ltt.assetLibrary)
 		return true, false
 	}
 	return false, true
 }
 
-func (ltt *LongTricklingText) Draw(screen *ebiten.Image, assetLibrary *assets.Library, x, y, width, height int) {
-	ltt.tt.Draw(screen, assetLibrary, x, y, width, height)
+func (ltt *LongTricklingText) Draw(screen *ebiten.Image, x, y, width, height int) {
+	ltt.tt.Draw(screen, x, y, width, height)
 }

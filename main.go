@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+
 	ebiten.SetWindowSize(1280, 800)
 	ebiten.SetWindowTitle("MichelSpace2000")
 
