@@ -15,7 +15,7 @@ func drawSpaceBackground(screen *ebiten.Image, assetLibrary *assets.Library, pos
 	bg, _ := assetLibrary.Images.Load("bg")
 
 	parallaxFactor := math.Pow(3.0, zoomFactor)
-	imageWidth, imageHeight := bg.Size()
+	imageWidth, imageHeight := bg.Bounds().Dx(), bg.Bounds().Dy()
 	topLeftBackgroundTileX := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*position.X - screenWidth/2 /*/zoomFactor*/) / (float64(imageWidth) * scale)))
 	topLeftBackgroundTileY := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*position.Y - screenHeight/2 /*/zoomFactor*/) / (float64(imageHeight) * scale)))
 	bottomRightBackgroundTileX := int(math.Floor((((parallaxFactor-1.0)/parallaxFactor)*position.X + screenWidth/2 /*/zoomFactor*/) / (float64(imageWidth) * scale)))

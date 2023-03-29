@@ -5,7 +5,7 @@ import (
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 
 	"github.com/RemiEven/michelSpace2000/src/ms2k/assets"
 )
@@ -42,10 +42,10 @@ func DrawBoxAround(screen *ebiten.Image, assetLibrary *assets.Library, x, y, wid
 		int(width/scale)+numberOfTrues(drawLeftBorder, drawRightBorder)*horizontalBorderHeightPx,
 		int(height/scale)+numberOfTrues(drawTopBorder, drawBottomBorder)*horizontalBorderHeightPx,
 	)
-	ebitenutil.DrawRect(intermediaryImage, float64(numberOfTrues(drawLeftBorder)*horizontalBorderHeightPx), float64(numberOfTrues(drawTopBorder)*horizontalBorderHeightPx), float64(width/scale), float64(height/scale), BoxBgColor)
+	vector.DrawFilledRect(intermediaryImage, float32(numberOfTrues(drawLeftBorder)*horizontalBorderHeightPx), float32(numberOfTrues(drawTopBorder)*horizontalBorderHeightPx), float32(width/scale), float32(height/scale), BoxBgColor, false)
 
 	baseImage, _ := assetLibrary.Images.Load("ui/listbox")
-	baseImageWidth, baseImageHeight := baseImage.Size()
+	baseImageWidth, baseImageHeight := baseImage.Bounds().Dx(), baseImage.Bounds().Dy()
 
 	var (
 		topBorder         = baseImage.SubImage(image.Rect(40, 2, 41, 2+horizontalBorderHeightPx)).(*ebiten.Image)

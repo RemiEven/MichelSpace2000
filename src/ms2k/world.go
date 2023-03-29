@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/colorm"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 
@@ -230,7 +231,7 @@ func (w *World) Draw(screen *ebiten.Image) {
 
 	{
 		wormHoleImage, _ := w.assetLibrary.Images.Load("wormHole")
-		imageWidth, imageHeight := wormHoleImage.Size()
+		imageWidth, imageHeight := wormHoleImage.Bounds().Dx(), wormHoleImage.Bounds().Dy()
 		for _, wormHole := range w.WormHoles {
 			if isInBox(wormHole.Position.X, wormHole.Position.Y, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {
 				dio := &ebiten.DrawImageOptions{}
@@ -249,22 +250,24 @@ func (w *World) Draw(screen *ebiten.Image) {
 		planetImage, _ := w.assetLibrary.Images.Load("planet")
 		moonImage, _ := w.assetLibrary.Images.Load("moon")
 		satelliteImage, _ := w.assetLibrary.Images.Load("satellite")
-		imageWidth, imageHeight := planetImage.Size()
+		imageWidth, imageHeight := planetImage.Bounds().Dx(), planetImage.Bounds().Dy()
 		for _, planet := range w.Planets {
 			if planet == w.Planets[0] {
 				continue
 			}
 			if isInBox(planet.Position.X, planet.Position.Y, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {
-				dio := &ebiten.DrawImageOptions{}
+				dio := &colorm.DrawImageOptions{}
 				scale := 0.25 * zoomFactor
 				dio.GeoM.Scale(scale, scale)
 				dio.GeoM.Translate(-float64(imageWidth)/2.0*scale, -float64(imageHeight)/2.0*scale)
 
 				translateToDrawPosition(&screenBounds, planet.Position, viewPortCenter, &dio.GeoM, zoomFactor)
 
-				dio.ColorM.ChangeHSV(planet.Hue, 1, 1)
-				screen.DrawImage(planetImage, dio)
-				moonImageWidth, moonImageHeight := moonImage.Size()
+				cm := colorm.ColorM{}
+				cm.ChangeHSV(planet.Hue, 1, 1)
+
+				colorm.DrawImage(screen, planetImage, cm, dio)
+				moonImageWidth, moonImageHeight := moonImage.Bounds().Dx(), moonImage.Bounds().Dy()
 				for _, moon := range planet.Moons {
 					dio := &ebiten.DrawImageOptions{}
 					scale := zoomFactor
@@ -274,7 +277,7 @@ func (w *World) Draw(screen *ebiten.Image) {
 					screen.DrawImage(moonImage, dio)
 				}
 				if planet.Looted {
-					satelliteImageWidth, satelliteImageHeight := satelliteImage.Size()
+					satelliteImageWidth, satelliteImageHeight := satelliteImage.Bounds().Dx(), satelliteImage.Bounds().Dy()
 					dio := &ebiten.DrawImageOptions{}
 					scale := zoomFactor
 					dio.GeoM.Scale(scale, scale)
@@ -294,7 +297,7 @@ func (w *World) Draw(screen *ebiten.Image) {
 
 	{
 		earthImage, _ := w.assetLibrary.Images.Load("earth")
-		imageWidth, imageHeight := earthImage.Size()
+		imageWidth, imageHeight := earthImage.Bounds().Dx(), earthImage.Bounds().Dy()
 		if isInBox(0, 0, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {
 			dio := &ebiten.DrawImageOptions{}
 			scale := 2.0 * zoomFactor
@@ -309,7 +312,7 @@ func (w *World) Draw(screen *ebiten.Image) {
 
 	{
 		shipImage, _ := w.assetLibrary.Images.Load("ship")
-		imageWidth, imageHeight := shipImage.Size()
+		imageWidth, imageHeight := shipImage.Bounds().Dx(), shipImage.Bounds().Dy()
 		for _, ship := range w.Ships {
 			if isInBox(ship.Position.X, ship.Position.Y, minXToDisplay, maxXToDisplay, minYToDisplay, maxYToDisplay) {
 				dio := &ebiten.DrawImageOptions{}
